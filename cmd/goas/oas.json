@@ -21,7 +21,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.CatReq"
+                "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.CatReq"
               }
             }
           },
@@ -33,7 +33,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.CatResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.CatResp"
                 }
               }
             }
@@ -43,7 +43,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.ErrResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.ErrResp"
                 }
               }
             }
@@ -64,7 +64,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.CatsResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.CatsResp"
                 }
               }
             }
@@ -74,7 +74,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.ErrResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.ErrResp"
                 }
               }
             }
@@ -107,7 +107,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.CatResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.CatResp"
                 }
               }
             }
@@ -117,7 +117,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.ErrResp"
+                  "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.ErrResp"
                 }
               }
             }
@@ -128,7 +128,7 @@
   },
   "components": {
     "schemas": {
-      "github.com\\mikunalpha\\goas\\example\\handler.Cat": {
+      "github.com-mikunalpha-goas-example-handler.Cat": {
         "type": "object",
         "properties": {
           "age": {
@@ -153,34 +153,34 @@
           }
         }
       },
-      "github.com\\mikunalpha\\goas\\example\\handler.CatReq": {
+      "github.com-mikunalpha-goas-example-handler.CatReq": {
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.Cat"
+            "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.Cat"
           }
         }
       },
-      "github.com\\mikunalpha\\goas\\example\\handler.CatResp": {
+      "github.com-mikunalpha-goas-example-handler.CatResp": {
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.Cat"
+            "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.Cat"
           }
         }
       },
-      "github.com\\mikunalpha\\goas\\example\\handler.CatsResp": {
+      "github.com-mikunalpha-goas-example-handler.CatsResp": {
         "type": "object",
         "properties": {
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.Cat"
+              "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.Cat"
             }
           }
         }
       },
-      "github.com\\mikunalpha\\goas\\example\\handler.Err": {
+      "github.com-mikunalpha-goas-example-handler.Err": {
         "type": "object",
         "properties": {
           "code": {
@@ -193,11 +193,11 @@
           }
         }
       },
-      "github.com\\mikunalpha\\goas\\example\\handler.ErrResp": {
+      "github.com-mikunalpha-goas-example-handler.ErrResp": {
         "type": "object",
         "properties": {
           "error": {
-            "$ref": "#/components/schemas/github.com\\mikunalpha\\goas\\example\\handler.Err"
+            "$ref": "#/components/schemas/github.com-mikunalpha-goas-example-handler.Err"
           }
         }
       }

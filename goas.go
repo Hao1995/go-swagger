@@ -255,6 +255,7 @@ func (g *Goas) scanPackages(packages []string) []string {
 func (g *Goas) getRealPackagePath(packagePath string) string {
 	packagePath = strings.Trim(packagePath, "\"")
 
+	// packagePathName := strings.Replace(packagePath, "\\", "-", -1)
 	cachedPackagePath, ok := g.PackagePathCache[packagePath]
 	if ok {
 		return cachedPackagePath
@@ -353,8 +354,9 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 	if strings.HasSuffix(packageName, "core") {
 		return
 	}
+
 	g.CurrentPackage = packageName
-	pkgRealPath := g.getRealPackagePath(packageName) //Harry: Real path need to replace "\" with "-"
+	pkgRealPath := g.getRealPackagePath(packageName)
 	if pkgRealPath == "" {
 		return
 	}
@@ -554,7 +556,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 				Format: basicTypesOASFormats[typeName],
 			}
 		} else {
-			_, ok := g.OASSpec.Components.Schemas[typeName]
+			_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 			if ok {
 				parameter.Schema = &SchemaObject{
 					Ref: referenceLink(typeName),
@@ -585,7 +587,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 	}
 	operation.RequestBody.Content[ContentTypeJson] = &MediaTypeObject{}
 
-	_, ok := g.OASSpec.Components.Schemas[typeName]
+	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 	if ok {
 		operation.RequestBody.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
@@ -695,11 +697,10 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 		return err
 	}
 
-	_, ok := g.OASSpec.Components.Schemas[typeName]
+	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 	if ok {
 		response.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
-			// Ref: typeName,
 		}
 	} else {
 		response.Content[ContentTypeJson].Schema = &SchemaObject{
@@ -712,7 +713,6 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 			Type: "array",
 			Items: &ReferenceObject{
 				Ref: referenceLink(typeName),
-				// Ref: typeName,
 			},
 		}
 	} else if response.Content[ContentTypeJson].Schema.Ref == "" {
@@ -754,9 +754,10 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				}
 			}
 
-			_, ok := g.OASSpec.Components.Schemas[registerType]
+			componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
+			_, ok := g.OASSpec.Components.Schemas[componentsSchemasName]
 			if !ok {
-				g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
+				g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
 					Type:       "object",
 					Required:   model.Required,
 					Properties: map[string]interface{}{},
@@ -769,13 +770,14 @@ func (g *Goas) registerType(typeName string) (string, error) {
 					v.Items = nil
 					v.Format = ""
 				}
-				g.OASSpec.Components.Schemas[registerType].Properties[k] = v
+				g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
 			}
 
 			for _, m := range innerModels {
 				registerType := m.Id
-				if _, ok := g.OASSpec.Components.Schemas[registerType]; !ok {
-					g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
+				componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
+				if _, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; !ok {
+					g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
 						Type:       "object",
 						Required:   m.Required,
 						Properties: map[string]interface{}{},
@@ -787,7 +789,7 @@ func (g *Goas) registerType(typeName string) (string, error) {
 						v.Items = nil
 						v.Format = ""
 					}
-					g.OASSpec.Components.Schemas[registerType].Properties[k] = v
+					g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
 				}
 			}
 		}
@@ -908,7 +910,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 				for _, property := range m.Properties {
 					if property.Type == "array" {
 						if property.Items.Ref == typeName {
-							property.Items.Ref = referenceLink(typeModel.Id)
+							property.Items.Ref = referenceLink(typeModel.Id) //Harry: Here should be fixed "/" to "-"
 						}
 					} else {
 						if property.Type == typeName {
@@ -949,10 +951,6 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 	var model *ast.TypeSpec
 	var modelPackage string
 
-	//Harry
-	if modelName == "time.Time" {
-		fmt.Println(modelName)
-	}
 	modelNameParts := strings.Split(modelName, ".")
 
 	//if no dot in name - it can be only model from current package
