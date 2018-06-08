@@ -35,15 +35,19 @@ type Goas struct {
 }
 
 func New() *Goas {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// pwd, err := os.Getwd()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	pwd := "c:\\gotool\\src\\github.com\\mikunalpha\\goas\\example"
 
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
 		log.Fatal("$GOPATH environment variable is empty.")
 	}
+
+	gopath = strings.ToLower(gopath) //Harry
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
 		gopaths = strings.Split(gopath, ";")
@@ -345,8 +349,12 @@ func (g *Goas) getRealPackagePath(packagePath string) string {
 }
 
 func (g *Goas) parseTypeDefinitions(packageName string) {
+
+	if strings.HasSuffix(packageName, "core") {
+		return
+	}
 	g.CurrentPackage = packageName
-	pkgRealPath := g.getRealPackagePath(packageName)
+	pkgRealPath := g.getRealPackagePath(packageName) //Harry: Real path need to replace "\" with "-"
 	if pkgRealPath == "" {
 		return
 	}
@@ -363,6 +371,7 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 				if generalDeclaration, ok := astDeclaration.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
 					for _, astSpec := range generalDeclaration.Specs {
 						if typeSpec, ok := astSpec.(*ast.TypeSpec); ok {
+							//Harry: Definition "datetime"
 							g.TypeDefinitions[pkgRealPath][typeSpec.Name.String()] = typeSpec
 						}
 					}
@@ -441,6 +450,11 @@ func (g *Goas) parseImportStatements(packageName string) map[string]bool {
 }
 
 func (g *Goas) parsePaths(packageName string) {
+
+	if strings.HasSuffix(packageName, "core") {
+		return
+	}
+
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
 
@@ -804,6 +818,10 @@ type ModelPropertyItems struct {
 func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, knownModelNames map[string]bool) ([]*Model, error) {
 	knownModelNames[modelName] = true
 
+	//Harry
+	// if modelName == "string" {
+	// 	fmt.Println(modelName)
+	// }
 	astTypeSpec, modelPackage := g.findModelDefinition(modelName, currentPackage)
 
 	modelNameParts := strings.Split(modelName, ".")
@@ -931,6 +949,10 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 	var model *ast.TypeSpec
 	var modelPackage string
 
+	//Harry
+	if modelName == "time.Time" {
+		fmt.Println(modelName)
+	}
 	modelNameParts := strings.Split(modelName, ".")
 
 	//if no dot in name - it can be only model from current package
@@ -983,6 +1005,7 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 	return model, modelPackage
 }
 
+//Harry: Can not find definition of "string"
 func (g *Goas) getModelDefinition(model string, packageName string) *ast.TypeSpec {
 	pkgRealPath := g.getRealPackagePath(packageName)
 	if pkgRealPath == "" {
@@ -1026,6 +1049,15 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 
 	// fmt.Println(m.Id, typeAsString)
 
+	//Harry: Determine if it's Core
+	if strings.Contains(typeAsString, "core.") {
+		typeAsString = strings.Replace(typeAsString, "core.", "", -1)
+		if typeAsString == "DateTime" {
+			typeAsString = "datetime"
+		} else {
+			typeAsString = strings.ToLower(typeAsString)
+		}
+	}
 	if strings.HasPrefix(typeAsString, "[]") {
 		property.Type = "array"
 		g.setItemType(property, typeAsString[2:])
@@ -1038,6 +1070,7 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		property.Type = "interface"
 	} else if typeAsString == "time.Time" {
 		property.Type = "Time"
+		// property.Type = "datetime"
 	} else {
 		property.Type = typeAsString
 	}

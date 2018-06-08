@@ -1,6 +1,9 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mikunalpha/goas/example/core"
+)
 
 type EmptyResp struct{}
 
@@ -26,6 +29,9 @@ type CatResp struct {
 }
 
 type Cat struct {
+	// CoreString core.String `json:"corestring,omitempty"`
+	CoreDateTime core.DateTime `json:"coredatetime,omitempty"`
+	// DateTime time.Time       `json:"datetime,omitempty"`
 	Name   *string         `json:"name,omitempty"`
 	Age    int64           `json:"age,omitempty"`
 	Phones *[]string       `json:"phones,omitempty"`
