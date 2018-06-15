@@ -1,4 +1,6 @@
 vendor
 glide.lock
 example/debug
+example/oas.json
 cmd/goas/debug
+cmd/goas/oas.json

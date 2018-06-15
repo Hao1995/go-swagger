@@ -33,6 +33,7 @@ func action(c *cli.Context) error {
 	// fmt.Println(c.GlobalString("output"))
 	return g.CreateOASFile(c.GlobalString("output"))
 
+	//Harry
 	// return g.CreateOASFile(filepath.Dir(os.Args[0]) + "\\index.json") //Harry: Current running path
 	// fmt.Println(filepath.Dir())
 	// return g
@@ -59,6 +60,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//Harry
 	// err := action()
 	// if err != nil {
 	// 	log.Fatal(err)
