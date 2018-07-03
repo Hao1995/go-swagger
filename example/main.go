@@ -10,7 +10,9 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mikunalpha/goas/example/handler"
+
+	"gitlab.paradise-soft.com.tw/backend/goas/example/handler"
+	// "github.com/mikunalpha/goas/example/handler"
 )
 
 func main() {

@@ -1,0 +1,290 @@
+{
+  "openapi": "3.0.0",
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "info": {
+    "title": "Foo API",
+    "description": "API usually works as expected. But sometimes its not true.",
+    "termsOfService": "http://google.com/",
+    "contact": {
+      "name": "mikun",
+      "email": "mikun800527@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://unknown"
+    },
+    "version": "v0.1.0"
+  },
+  "paths": {
+    "/apis/v1/cats": {
+      "get": {
+        "tags": [
+          "dog"
+        ],
+        "summary": "Get Cats",
+        "description": "Return cats",
+        "responses": {
+          "200": {
+            "description": "Cats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.model.Data"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.ErrResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apis/v1/cats/{id}": {
+      "get": {
+        "tags": [
+          "dog"
+        ],
+        "summary": "Get Cat",
+        "description": "Return dog object",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Cat ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.CatResp"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.ErrResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apis/v1/dog": {
+      "post": {
+        "tags": [
+          "dog"
+        ],
+        "summary": "Post Cat",
+        "description": "Create dog object",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.CatReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Cat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.CatResp"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.ErrResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "gitlab.paradise-soft.com.tw-backend-goas-example-handler.Cat": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "coredatetime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.model.Data"
+          },
+          "inter": {},
+          "name": {
+            "type": "string",
+            "format": "string"
+          },
+          "phones": {
+            "type": "array",
+            "format": "string",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw-backend-goas-example-handler.CatReq": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw-backend-goas-example-handler.Cat"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw-backend-goas-example-handler.CatResp": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw-backend-goas-example-handler.Cat"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw-backend-goas-example-handler.Err": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "format": "string"
+          },
+          "msg": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw-backend-goas-example-handler.ErrResp": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw-backend-goas-example-handler.Err"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.handler.Cat": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "coredatetime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.model.Data"
+          },
+          "inter": {},
+          "name": {
+            "type": "string",
+            "format": "string"
+          },
+          "phones": {
+            "type": "array",
+            "format": "string",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.handler.CatReq": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.Cat"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.handler.CatResp": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.Cat"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.handler.Err": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "format": "string"
+          },
+          "msg": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.handler.ErrResp": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.handler.Err"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.model.Data": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/gitlab.paradise-soft.com.tw.backend.goas.example.paging.Paging"
+          }
+        }
+      },
+      "gitlab.paradise-soft.com.tw.backend.goas.example.paging.Paging": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
+    }
+  }
+}
