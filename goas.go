@@ -46,11 +46,11 @@ func New() *Goas {
 		log.Fatal("$GOPATH environment variable is empty.")
 	}
 
-	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
-	gopath = strings.ToLower(gopath) //Harry
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
+	// gopath = strings.ToLower(gopath) //Harry
 
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
-	// gopath = strings.ToLower(gopath) //Harry
+	// gopath = strings.ToLower(gopath)                                          //Harry
 
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
@@ -924,10 +924,15 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
 			}
 
+			//===Harry
+			if len(model.ExtraModel) > 0 {
+				innerModels = append(innerModels, model.ExtraModel...)
+			}
+			// ===Harry
 			for _, m := range innerModels {
 				registerType := m.Id
 				// componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
-				componentsSchemasName := convertRefName(registerType) //Harry
+				componentsSchemasName := convertRefName(registerType) //Harry: 似乎是不用轉換，因為m.Id本來就是轉換過的
 				if _, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; !ok {
 					g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
 						Type:       "object",
@@ -966,6 +971,8 @@ type Model struct {
 	Required   []string                  `json:"required,omitempty"`
 	Properties map[string]*ModelProperty `json:"properties,omitempty"`
 	Ref        string                    `json:"$ref,omitempty"`
+
+	ExtraModel []*Model `json:"extramodel,omitempty"` //Harry
 }
 
 type ModelProperty struct {
@@ -1002,7 +1009,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		g.parseFieldList(m, astStructType.Fields.List, modelPackage) //Harry: 把此struct下面的fields都parse過
 		usedTypes := map[string]bool{}
 
-		for _, property := range m.Properties {
+		for _, property := range m.Properties { //Comment: each normal properties will be mapping
 			typeName := property.Type
 			if typeName == "array" {
 				if property.Items.Type != "" {
@@ -1112,63 +1119,71 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		// fmt.Println(astSelectorExpr)
 		modelNameParts = nil
 		if astDataIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
-			fmt.Println("Package : ", astDataIdent.Name)
+			// fmt.Println("Package : ", astDataIdent.Name)
 			modelNameParts = append(modelNameParts, astDataIdent.Name)
 		}
-		fmt.Println("Type : ", astSelectorExpr.Sel.Name)
+		// fmt.Println("Type : ", astSelectorExpr.Sel.Name)
 		modelNameParts = append(modelNameParts, astSelectorExpr.Sel.Name)
 
-		// typeModel := &Model{}
+		typeModel := &Model{}
 		// typeInnerModels, err := g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
-		typeInnerModels, err := g.parseModel(m, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
+		// g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
+		typeInnerModels, err := g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
 		if err != nil {
 			return nil, err
 		}
-
-		modelNameFromPath := modelNameParts[len(modelNameParts)-1] //Harry: can modify
-		// Lets try to find it in imported packages
-		pkgRealPath := g.getRealPackagePath(modelPackage)
-		imports, ok := g.PackageImports[pkgRealPath]
-		if !ok {
-			log.Fatalf("Can not find definition of %s model. Package %s dont import anything", modelNameFromPath, pkgRealPath)
+		fmt.Println(typeInnerModels) //m.Properties = typeModel.Properties , 下面的應該都不用做了
+		//EX: m.Id = "gitlab.paradise-soft.com.tw.platform.common.paging.Hits"的properties應該直接等於"gitlab.paradise-soft.com.tw.glob.utils.paging.Hits"
+		// m.Properties = append(m.Properties, typeModel.Properties...)
+		if m.Properties == nil {
+			m.Properties = make(map[string]*ModelProperty)
 		}
-		relativePackage, ok := imports[modelNameParts[0]]
+		for k, v := range typeModel.Properties {
+			m.Properties[k] = v
+		}
+		m.ExtraModel = append(m.ExtraModel, typeInnerModels...)
+
+		// modelNameFromPath := modelNameParts[len(modelNameParts)-1] //Harry: can modify
+		// // Lets try to find it in imported packages
+		// pkgRealPath := g.getRealPackagePath(modelPackage)
+		// imports, ok := g.PackageImports[pkgRealPath]
 		// if !ok {
-		// 	log.Fatalf("Package %s is not imported to %s, Imported: %#v\n", modelNameParts[0], currentPackage, imports)
+		// 	log.Fatalf("Can not find definition of %s model. Package %s dont import anything", modelNameFromPath, pkgRealPath)
 		// }
-		if ok {
-			var modelFound bool
-			for _, packageName := range relativePackage {
-				model := g.getModelDefinition(modelNameFromPath, packageName)
-				if model != nil {
-					modelPackage = packageName
-					modelFound = true
+		// relativePackage, ok := imports[modelNameParts[0]]
+		// if ok {
+		// 	var modelFound bool
+		// 	for _, packageName := range relativePackage {
+		// 		model := g.getModelDefinition(modelNameFromPath, packageName)
+		// 		if model != nil {
+		// 			modelPackage = packageName
+		// 			modelFound = true
 
-					break
-				}
-			}
-			if !modelFound {
-				log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
-			}
-		} else {
-			//Harry: If the model do not import from "currentPackage". Directly find "model" from g.TypeDefinitions
+		// 			break
+		// 		}
+		// 	}
+		// 	if !modelFound {
+		// 		log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
+		// 	}
+		// } else {
+		// 	//Harry: If the model do not import from "currentPackage". Directly find "model" from g.TypeDefinitions
 
-			var modelFound bool
+		// 	var modelFound bool
 
-			for modelPkgPath, _ := range g.TypeDefinitions {
-				if strings.HasSuffix(modelPkgPath, modelNameParts[0]) {
-					// model = models[modelNameParts[1]]
-					modelPackage = modelPkgPath
-					modelFound = true
-				}
-			}
-			if !modelFound {
-				log.Fatalf("Can not find definition of %s model in GOAS.TypeDefinition", modelNameFromPath)
-			}
+		// 	for modelPkgPath, _ := range g.TypeDefinitions {
+		// 		if strings.HasSuffix(modelPkgPath, modelNameParts[0]) {
+		// 			// model = models[modelNameParts[1]]
+		// 			modelPackage = modelPkgPath
+		// 			modelFound = true
+		// 		}
+		// 	}
+		// 	if !modelFound {
+		// 		log.Fatalf("Can not find definition of %s model in GOAS.TypeDefinition", modelNameFromPath)
+		// 	}
 
-		}
+		// }
 
-		// m.Ref = typeModel.Id //
+		// m.Ref = typeModel.Id //這個也不用
 		// if m.Properties == nil {
 		// 	m.Properties = make(map[string]*ModelProperty)
 		// }
@@ -1182,15 +1197,15 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		// 	m.Properties[k] = v
 		// }
 
-		//Harry: type equal to other type. directly use this type
+		// Harry: type equal to other type. directly use this type
 		// m = typeModel
 
 		// if typeInnerModels != nil {
 		// 	innerModelList = append(innerModelList, typeInnerModels)
 		// }
-		if typeInnerModels != nil && len(typeInnerModels) > 0 {
-			innerModelList = append(innerModelList, typeInnerModels...)
-		}
+		// if typeInnerModels != nil && len(typeInnerModels) > 0 {
+		// 	innerModelList = append(innerModelList, typeInnerModels...)
+		// }
 
 	}
 
@@ -1382,14 +1397,23 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		knownModelNames := map[string]bool{}
 
 		g.parseModel(innerModel, name, modelPackage, knownModelNames)
-		// typeInnerModel, err := g.parseModel(innerModel, name, modelPackage, knownModelNames)
+		// typeInnerModel2, err := g.parseModel(innerModel, name, modelPackage, knownModelNames)
 		// if err != nil {
-		// 	return nil, err
+		// 	return
 		// }
+		// fmt.Println(typeInnerModel2)
 
+		//===Origin
 		for innerFieldName, innerField := range innerModel.Properties {
 			m.Properties[innerFieldName] = innerField
 		}
+		//===Origin
+
+		// ===Harry
+		if len(innerModel.ExtraModel) > 0 {
+			m.ExtraModel = append(m.ExtraModel, innerModel.ExtraModel...)
+		}
+		// ===Harry
 
 		//log.Fatalf("Here %#v\n", field.Type)
 		// return typeInnerModel, nil
