@@ -365,19 +365,6 @@ func (g *Goas) getRealPackagePath(packagePath string) string {
 
 func (g *Goas) parseTypeDefinitions(packageName string) {
 
-	// if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
-	// 	fmt.Println("=== parseTypeDefinitions - mock ===") //Harry
-	// }
-	// if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis" {
-	// 	fmt.Println("=== parseTypeDefinitions - routing/apis ===") //Harry
-	// }
-	// if packageName == "gitlab.paradise-soft.com.tw/routing/apis" {
-	// 	fmt.Println("=== parseTypeDefinitions - routing/apis ===") //Harry
-	// }
-	// if packageName == "gitlab.paradise-soft.com.tw/platform/services/reporting" {
-	// 	fmt.Println("=== parseTypeDefinitions - services/reporting ===") //Harry
-	// }
-
 	if strings.HasSuffix(packageName, "core") {
 		return
 	}
@@ -397,22 +384,10 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 	astPackages := g.getPackageAst(pkgRealPath)
 	for _, astPackage := range astPackages {
 		for _, astFile := range astPackage.Files {
-			// if strings.Contains(key, "C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\reporting_admin") {
-			// 	fmt.Println("====== reporting_admin")
-			// }
-			// if strings.Contains(key, "C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\platform\\services\\reporting\\agent_models") {
-			// 	fmt.Println("====== agent_models")
-			// }
 			for _, astDeclaration := range astFile.Decls {
 				if generalDeclaration, ok := astDeclaration.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
 					for _, astSpec := range generalDeclaration.Specs {
 						if typeSpec, ok := astSpec.(*ast.TypeSpec); ok {
-							// if packageName == "gitlab.paradise-soft.com.tw/routing/apis" {
-							// 	fmt.Println("store in g.TypeDefinitions : ", typeSpec.Name.String()) //Harry
-							// }
-							// if strings.Contains(key, "C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\platform\\services\\reporting\\agent_models") {
-							// 	fmt.Println("store in g.TypeDefinitions : ", typeSpec.Name.String()) //Harry
-							// }
 							g.TypeDefinitions[pkgRealPath][typeSpec.Name.String()] = typeSpec
 						}
 					}
@@ -422,21 +397,6 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 	}
 
 	for importedPackage, _ := range g.parseImportStatements(packageName) {
-		// if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
-		// 	fmt.Println("importedPackage : ", importedPackage) //Harry
-		// }
-		// if packageName == "gitlab.paradise-soft.com.tw/routing/apis/mock/loader" {
-		// 	fmt.Println("importedPackage : ", importedPackage) //Harry
-		// }
-		// if packageName == "gitlab.paradise-soft.com.tw/routing/apis" {
-		// 	fmt.Println("importedPackage : ", importedPackage) //Harry
-		// }
-
-		// if _, ok := g.TypeDefinitions["C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis"]; ok {
-		// 	fmt.Println("C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis has value in TypeDefinitions")
-		// } else {
-		// 	// fmt.Println("xxx C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis no value in TypeDefinitions")
-		// }
 		g.parseTypeDefinitions(importedPackage)
 	}
 }
@@ -588,9 +548,6 @@ func (g *Goas) parsePaths(packageName string) {
 				if generalDeclaration, ok := astDescription.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
 					for _, astSpec := range generalDeclaration.Specs {
 						if typeSpec, ok := astSpec.(*ast.TypeSpec); ok {
-							// if packageName == "gitlab.paradise-soft.com.tw/routing/apis" {
-							// 	fmt.Println("store in g.TypeDefinitions : ", typeSpec.Name.String()) //Harry
-							// }
 							g.FuncDefinitions[pkgRealPath][typeSpec.Name.String()] = typeSpec
 						}
 					}
@@ -600,10 +557,6 @@ func (g *Goas) parsePaths(packageName string) {
 				case *ast.FuncDecl:
 					operation := &OperationObject{
 						Responses: map[string]*ResponseObject{},
-					}
-
-					if astDeclaration.Name.String() == "listOrderAgentReportAdmEpt" {
-						fmt.Println("===== listOrderAgentReportAdmEpt Func") //Harry
 					}
 
 					if astDeclaration.Doc != nil && astDeclaration.Doc.List != nil {
@@ -627,19 +580,12 @@ func (g *Goas) parsePaths(packageName string) {
 		}
 	}
 
-	for importedPackage, _ := range g.parsePathImportStatements(packageName) {
-		if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
-			fmt.Println("importedPackage : ", importedPackage) //Harry
-		}
+	for importedPackage := range g.parsePathImportStatements(packageName) {
 		g.parsePaths(importedPackage)
 	}
 }
 
 func (g *Goas) parseOperation(operation *OperationObject, packageName, comment string) error {
-
-	if packageName == "gitlab.paradise-soft.com.tw/routing/apis" {
-		fmt.Println("=== parseOperation ===") //Harry
-	}
 
 	commentLine := strings.TrimSpace(strings.TrimLeft(comment, "//"))
 	if len(commentLine) == 0 {
@@ -931,7 +877,6 @@ func (g *Goas) registerType(typeName string) (string, error) {
 			// ===Harry
 			for _, m := range innerModels {
 				registerType := m.Id
-				// componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
 				componentsSchemasName := convertRefName(registerType) //Harry: 似乎是不用轉換，因為m.Id本來就是轉換過的
 				if _, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; !ok {
 					g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
@@ -1053,10 +998,8 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 					}
 					if property.Type != "array" {
 						property.Ref = referenceLink(modelNamesPackageNames[typeName])
-						// property.Ref = modelNamesPackageNames[typeName]
 					} else {
 						property.Items.Ref = referenceLink(modelNamesPackageNames[typeName])
-						// property.Items.Ref = modelNamesPackageNames[typeName]
 					}
 				}
 				continue
@@ -1116,23 +1059,17 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		//Harry： If this type is directly equal to other type
 		//EX: type Hits = globPaging.Hits
 
-		// fmt.Println(astSelectorExpr)
 		modelNameParts = nil
 		if astDataIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
-			// fmt.Println("Package : ", astDataIdent.Name)
 			modelNameParts = append(modelNameParts, astDataIdent.Name)
 		}
-		// fmt.Println("Type : ", astSelectorExpr.Sel.Name)
 		modelNameParts = append(modelNameParts, astSelectorExpr.Sel.Name)
 
 		typeModel := &Model{}
-		// typeInnerModels, err := g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
-		// g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
 		typeInnerModels, err := g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(typeInnerModels) //m.Properties = typeModel.Properties , 下面的應該都不用做了
 		//EX: m.Id = "gitlab.paradise-soft.com.tw.platform.common.paging.Hits"的properties應該直接等於"gitlab.paradise-soft.com.tw.glob.utils.paging.Hits"
 		// m.Properties = append(m.Properties, typeModel.Properties...)
 		if m.Properties == nil {
@@ -1142,70 +1079,6 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 			m.Properties[k] = v
 		}
 		m.ExtraModel = append(m.ExtraModel, typeInnerModels...)
-
-		// modelNameFromPath := modelNameParts[len(modelNameParts)-1] //Harry: can modify
-		// // Lets try to find it in imported packages
-		// pkgRealPath := g.getRealPackagePath(modelPackage)
-		// imports, ok := g.PackageImports[pkgRealPath]
-		// if !ok {
-		// 	log.Fatalf("Can not find definition of %s model. Package %s dont import anything", modelNameFromPath, pkgRealPath)
-		// }
-		// relativePackage, ok := imports[modelNameParts[0]]
-		// if ok {
-		// 	var modelFound bool
-		// 	for _, packageName := range relativePackage {
-		// 		model := g.getModelDefinition(modelNameFromPath, packageName)
-		// 		if model != nil {
-		// 			modelPackage = packageName
-		// 			modelFound = true
-
-		// 			break
-		// 		}
-		// 	}
-		// 	if !modelFound {
-		// 		log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
-		// 	}
-		// } else {
-		// 	//Harry: If the model do not import from "currentPackage". Directly find "model" from g.TypeDefinitions
-
-		// 	var modelFound bool
-
-		// 	for modelPkgPath, _ := range g.TypeDefinitions {
-		// 		if strings.HasSuffix(modelPkgPath, modelNameParts[0]) {
-		// 			// model = models[modelNameParts[1]]
-		// 			modelPackage = modelPkgPath
-		// 			modelFound = true
-		// 		}
-		// 	}
-		// 	if !modelFound {
-		// 		log.Fatalf("Can not find definition of %s model in GOAS.TypeDefinition", modelNameFromPath)
-		// 	}
-
-		// }
-
-		// m.Ref = typeModel.Id //這個也不用
-		// if m.Properties == nil {
-		// 	m.Properties = make(map[string]*ModelProperty)
-		// }
-
-		// Harry-EX
-		// m.Id = "gitlab.paradise-soft.com.tw.platform.common.paging.Hits"
-		// m.Ref = "gitlab.paradise-fot.com.tw.glob.utils.paging.Hits"
-		// So, m.Properties don't needs to put typeModel.Properties in it !
-		// ===
-		// for k, v := range typeModel.Properties {
-		// 	m.Properties[k] = v
-		// }
-
-		// Harry: type equal to other type. directly use this type
-		// m = typeModel
-
-		// if typeInnerModels != nil {
-		// 	innerModelList = append(innerModelList, typeInnerModels)
-		// }
-		// if typeInnerModels != nil && len(typeInnerModels) > 0 {
-		// 	innerModelList = append(innerModelList, typeInnerModels...)
-		// }
 
 	}
 
@@ -1293,7 +1166,6 @@ func (g *Goas) getModelDefinition(model string, packageName string) *ast.TypeSpe
 	}
 	packageModels, ok := g.TypeDefinitions[pkgRealPath] //Harry: Under parsePath. Maybe need be fixed to g.FuncDefinitions
 	if !ok {
-		//Harry: foreach g.TypeDefinitions
 		return nil
 	}
 	astTypeSpec, _ := packageModels[model]
@@ -1327,8 +1199,6 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 	// The next 2 lines of code normalize them to foo.Bar
 	reInternalRepresentation := regexp.MustCompile("&\\{(\\w*) (\\w*)\\}")
 	typeAsString = string(reInternalRepresentation.ReplaceAll([]byte(typeAsString), []byte("$1.$2")))
-
-	// fmt.Println(m.Id, typeAsString)
 
 	//Harry: Determine if it's Core
 	if strings.Contains(typeAsString, "core.") {
@@ -1367,25 +1237,16 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 			name = packageName + "." + strings.TrimPrefix(astSelectorExpr.Sel.Name, "*")
 		} else if astTypeIdent, ok := field.Type.(*ast.Ident); ok { //Harry: Normal situation
 			name = astTypeIdent.Name
-			// } else if astStarExpr, ok := field.Type.(*ast.StarExpr); ok {
-			// 	if astIdent, ok := astStarExpr.X.(*ast.Ident); ok {
-			// 		name = astIdent.Name
-			// 	}
 		} else if astStarExpr, ok := field.Type.(*ast.StarExpr); ok { //Harry: Be used by 'pointer'
 			if astStarExprX, ok := astStarExpr.X.(*ast.SelectorExpr); ok {
 				//Harry: import from other package
 				//Ex: *model.Data
 				if astDataIdent, ok := astStarExprX.X.(*ast.Ident); ok {
-					// fmt.Println("Package : ", astDataIdent.Name)
-					// modelPackage = astDataIdent.Name
 					name = astDataIdent.Name + "." + astStarExprX.Sel.Name
 				}
-				// fmt.Println("Type : ", astStarExprX.Sel.Name)
-				// name = astStarExprX.Sel.Name
 			} else if astTypeIdent, ok := astStarExpr.X.(*ast.Ident); ok {
 				//Harry: import from currently package
 				//Ex: *Data
-				// fmt.Println("Type : ", astTypeIdent.Name)
 				name = astTypeIdent.Name
 			}
 		} else {
@@ -1397,17 +1258,10 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		knownModelNames := map[string]bool{}
 
 		g.parseModel(innerModel, name, modelPackage, knownModelNames)
-		// typeInnerModel2, err := g.parseModel(innerModel, name, modelPackage, knownModelNames)
-		// if err != nil {
-		// 	return
-		// }
-		// fmt.Println(typeInnerModel2)
 
-		//===Origin
 		for innerFieldName, innerField := range innerModel.Properties {
 			m.Properties[innerFieldName] = innerField
 		}
-		//===Origin
 
 		// ===Harry
 		if len(innerModel.ExtraModel) > 0 {
@@ -1416,7 +1270,6 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		// ===Harry
 
 		//log.Fatalf("Here %#v\n", field.Type)
-		// return typeInnerModel, nil
 		return
 	}
 	name = field.Names[0].Name
