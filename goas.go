@@ -147,9 +147,9 @@ func (g *Goas) parseInfo() {
 	}
 
 	g.OASSpec.OnpenAPI = OpenAPIVersion
-	g.OASSpec.Servers = []*ServerObject{{
-		URL: "/",
-	}}
+	// g.OASSpec.Servers = []*ServerObject{{
+	// 	URL: "/",
+	// }}
 	g.OASSpec.Info = &InfoObject{}
 	g.OASSpec.Paths = map[string]*PathItemObject{}
 
@@ -158,6 +158,11 @@ func (g *Goas) parseInfo() {
 			for _, commentLine := range strings.Split(comment.Text(), "\n") {
 				attribute := strings.ToLower(strings.Split(commentLine, " ")[0])
 				switch attribute {
+				case "@serversurl":
+					g.OASSpec.Servers = []*ServerObject{{
+						URL: strings.TrimSpace(commentLine[len(attribute):]),
+					}}
+					// g.OASSpec.Info.Version = strings.TrimSpace(commentLine[len(attribute):])
 				case "@version":
 					g.OASSpec.Info.Version = strings.TrimSpace(commentLine[len(attribute):])
 				case "@title":
@@ -213,16 +218,9 @@ func (g *Goas) parseAPIs() {
 	packageNames := g.scanPackages(layerPackageNames)
 
 	for _, packageName := range packageNames {
-		if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
-			fmt.Println("=== For Loop for packageNames - type definizions ===") //Harry
-		}
-		// fmt.Println("parseAPIS packageName : ", packageName) //Harry
 		g.parseTypeDefinitions(packageName)
 	}
 	for _, packageName := range packageNames {
-		if packageName == "gitlab.paradise-soft.com.tw/routing/apis/mock" {
-			fmt.Println("=== For Loop for packageNames - parsePaths===") //Harry
-		}
 		g.parsePaths(packageName)
 	}
 }
@@ -513,13 +511,6 @@ func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 
 func (g *Goas) parsePaths(packageName string) {
 
-	if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
-		fmt.Println("=== parsePaths - mock ===") //Harry
-	}
-	if packageName == "gitlab.paradise-soft.com.tw/routing/apis/mock/loader" {
-		fmt.Println("=== parsePaths - loader ===") //Harry
-	}
-
 	if strings.HasSuffix(packageName, "core") { //Harry
 		return
 	}
@@ -539,10 +530,7 @@ func (g *Goas) parsePaths(packageName string) {
 	astPackages := g.getPackageAst(pkgRealPath)
 
 	for _, astPackage := range astPackages {
-		for key, astFile := range astPackage.Files {
-			if strings.Contains(key, "C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\reporting_admin") {
-				fmt.Println("===== In reporting_admin file") //Harry
-			}
+		for _, astFile := range astPackage.Files {
 			for _, astDescription := range astFile.Decls {
 				//Harry
 				if generalDeclaration, ok := astDescription.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
