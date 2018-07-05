@@ -1,4 +1,4 @@
 vendor
 glide.lock
-cmd/goas/debug
 example/debug
+cmd/goas/debug

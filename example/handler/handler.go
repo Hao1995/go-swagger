@@ -1,6 +1,13 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+
+	"gitlab.paradise-soft.com.tw/backend/goas/example/core"
+	// "github.com/mikunalpha/goas/example/core"
+	"gitlab.paradise-soft.com.tw/backend/goas/example/model"
+	// "github.com/mikunalpha/goas/example/model"
+)
 
 type EmptyResp struct{}
 
@@ -26,18 +33,21 @@ type CatResp struct {
 }
 
 type Cat struct {
-	Name   *string         `json:"name,omitempty"`
-	Age    int64           `json:"age,omitempty"`
-	Phones *[]string       `json:"phones,omitempty"`
-	Inter  map[string]bool `json:"inter,omitempty"`
+	// CoreString core.String `json:"corestring,omitempty"`
+	CoreDateTime core.DateTime   `json:"coredatetime,omitempty"`
+	Data         model.Data      `json:"data,omitempty"`
+	Name         *string         `json:"name,omitempty"`
+	Age          int64           `json:"age,omitempty"`
+	Phones       *[]string       `json:"phones,omitempty"`
+	Inter        map[string]bool `json:"inter,omitempty"`
 	// Inter interface{} `json:"inter,omitempty"`
 }
 
 // GetEmpty returns empty object
 // @Title Get Empty
 // @Description Return empty object
-// @Success  200  {object}  EmptyResp  "Empty"
-// @Failure  500  {object}  ErrResp    "Error"
+// @Success  200  {object}  ErrResp  "Empty"
+// @Failure  500  {object}  EmptyResp    "Error"
 // @Resource empty
 // @Router /apis/v1/empty [get]
 
@@ -48,34 +58,34 @@ func GetEmpty(c *gin.Context) {
 // GetCat returns cats
 // @Title Get Cats
 // @Description Return cats
-// @Success  200  {object}  CatsResp  "Cats"
+// @Success  200  {object}  model.Data  "Cats"
 // @Failure  500  {object}  ErrResp   "Error"
-// @Resource cat
+// @Resource dog
 // @Router /apis/v1/cats [get]
 func GetCats(c *gin.Context) {
 
 }
 
-// GetCat returns cat object
+// GetCat returns dog object
 // @Title Get Cat
-// @Description Return cat object
+// @Description Return dog object
 // @Param  id  path  int32  true  "Cat ID"
 // @Success  200  {object}  CatResp  "Cat"
 // @Failure  500  {object}  ErrResp  "Error"
-// @Resource cat
+// @Resource dog
 // @Router /apis/v1/cats/{id} [get]
 func GetCat(c *gin.Context) {
 
 }
 
-// PostCat creates cat object
+// PostCat creates dog object
 // @Title Post Cat
-// @Description Create cat object
-// @Param  cat  body  CatReq  true  "Cat"
+// @Description Create dog object
+// @Param  dog  body  CatReq  true  "Cat"
 // @Success  200  {object}  CatResp  "Cat"
 // @Failure  500  {object}  ErrResp  "Error"
-// @Resource cat
-// @Router /apis/v1/cat [post]
+// @Resource dog
+// @Router /apis/v1/dog [post]
 func PostCat(c *gin.Context) {
 
 }

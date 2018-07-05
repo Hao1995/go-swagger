@@ -4,7 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/mikunalpha/goas"
+	"gitlab.paradise-soft.com.tw/backend/goas"
+	// "github.com/mikunalpha/goas"
 	"github.com/urfave/cli"
 )
 
@@ -23,13 +24,21 @@ var flags = []cli.Flag{
 }
 
 func action(c *cli.Context) error {
+	// func action() error {
 	g := goas.New()
 
 	if c.GlobalIsSet("debug") {
 		g.EnableDebug = true
 	}
 
+	// fmt.Println(c.GlobalString("output"))
 	return g.CreateOASFile(c.GlobalString("output"))
+
+	//Harry
+	// return g.CreateOASFile(filepath.Dir(os.Args[0]) + "\\index.json") //Harry: Current running path
+	// fmt.Println(filepath.Dir())
+	// return g
+	// return g.CreateOASFile("c:\\gotool\\src\\github.com\\mikunalpha\\goas\\example\\index.json") //Harry: Current running path
 }
 
 func main() {
@@ -51,4 +60,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//Harry
+	// err := action()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }

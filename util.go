@@ -69,7 +69,8 @@ var basicTypes = map[string]bool{
 	"rune":       true,
 	"uintptr":    true,
 	"error":      true,
-	// "Time":      true,
+	"Time":       true,
+	"datetime":   true,
 	// "file":      true,
 	// "undefined": true,
 }
@@ -80,20 +81,22 @@ func isBasicType(typeName string) bool {
 }
 
 var basicTypesOASTypes = map[string]string{
-	"bool":    "boolean",
-	"uint":    "integer",
-	"uint8":   "integer",
-	"uint16":  "integer",
-	"uint32":  "integer",
-	"uint64":  "integer",
-	"int":     "integer",
-	"int8":    "integer",
-	"int16":   "integer",
-	"int32":   "integer",
-	"int64":   "integer",
-	"float32": "number",
-	"float64": "number",
-	"string":  "string",
+	"bool":     "boolean",
+	"uint":     "integer",
+	"uint8":    "integer",
+	"uint16":   "integer",
+	"uint32":   "integer",
+	"uint64":   "integer",
+	"int":      "integer",
+	"int8":     "integer",
+	"int16":    "integer",
+	"int32":    "integer",
+	"int64":    "integer",
+	"float32":  "number",
+	"float64":  "number",
+	"string":   "string",
+	"Time":     "string",
+	"datetime": "string",
 	// "file":    "formData",
 }
 
@@ -103,20 +106,22 @@ func isBasicTypeOASType(typeName string) bool {
 }
 
 var basicTypesOASFormats = map[string]string{
-	"bool":    "boolean",
-	"uint":    "integer",
-	"uint8":   "int64",
-	"uint16":  "int64",
-	"uint32":  "int64",
-	"uint64":  "int64",
-	"int":     "int64",
-	"int8":    "int64",
-	"int16":   "int64",
-	"int32":   "int64",
-	"int64":   "int64",
-	"float32": "float",
-	"float64": "double",
-	"string":  "string",
+	"bool":     "boolean",
+	"uint":     "integer",
+	"uint8":    "int64",
+	"uint16":   "int64",
+	"uint32":   "int64",
+	"uint64":   "int64",
+	"int":      "int64",
+	"int8":     "int64",
+	"int16":    "int64",
+	"int32":    "int64",
+	"int64":    "int64",
+	"float32":  "float",
+	"float64":  "double",
+	"string":   "string",
+	"Time":     "date-time",
+	"datetime": "date-time",
 }
 
 var typeDefTranslations = map[string]string{}
@@ -125,10 +130,10 @@ var modelNamesPackageNames = map[string]string{}
 
 func referenceLink(name string) string {
 	if strings.HasPrefix(name, "#/schemas/") {
-		return name
+		return strings.Replace(name, "\\", "-", -1)
 	}
 
-	return "#/components/schemas/" + name
+	return "#/components/schemas/" + strings.Replace(name, "\\", "-", -1)
 }
 
 func getTypeAsString(fieldType interface{}) string {
@@ -164,4 +169,8 @@ func getTypeAsString(fieldType interface{}) string {
 
 	// log.Printf("Get type as string(no star expression)! %#v , type: %s\n", fieldType, fmt.Sprint(fieldType))
 	return fmt.Sprint(fieldType)
+}
+
+func convertRefName(ref string) string {
+	return strings.Replace(ref, "\\", "-", -1)
 }

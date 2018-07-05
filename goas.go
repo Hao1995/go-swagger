@@ -28,6 +28,7 @@ type Goas struct {
 	CurrentPackage   string
 	PackagePathCache map[string]string
 	TypeDefinitions  map[string]map[string]*ast.TypeSpec
+	FuncDefinitions  map[string]map[string]*ast.TypeSpec //Harry
 	PackagesCache    map[string]map[string]*ast.Package
 	PackageImports   map[string]map[string][]string
 
@@ -44,6 +45,13 @@ func New() *Goas {
 	if gopath == "" {
 		log.Fatal("$GOPATH environment variable is empty.")
 	}
+
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
+	// gopath = strings.ToLower(gopath) //Harry
+
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
+	// gopath = strings.ToLower(gopath)                                          //Harry
+
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
 		gopaths = strings.Split(gopath, ";")
@@ -51,6 +59,7 @@ func New() *Goas {
 
 	currentGopath := ""
 	packageName := ""
+
 	for _, p := range gopaths {
 		if strings.HasPrefix(pwd, p) {
 			currentGopath = p
@@ -70,6 +79,7 @@ func New() *Goas {
 		OASSpec:          &OASSpecObject{},
 		PackagePathCache: map[string]string{},
 		TypeDefinitions:  map[string]map[string]*ast.TypeSpec{},
+		FuncDefinitions:  map[string]map[string]*ast.TypeSpec{},
 		PackagesCache:    map[string]map[string]*ast.Package{},
 		PackageImports:   map[string]map[string][]string{},
 	}
@@ -203,9 +213,16 @@ func (g *Goas) parseAPIs() {
 	packageNames := g.scanPackages(layerPackageNames)
 
 	for _, packageName := range packageNames {
+		if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
+			fmt.Println("=== For Loop for packageNames - type definizions ===") //Harry
+		}
+		// fmt.Println("parseAPIS packageName : ", packageName) //Harry
 		g.parseTypeDefinitions(packageName)
 	}
 	for _, packageName := range packageNames {
+		if packageName == "gitlab.paradise-soft.com.tw/routing/apis/mock" {
+			fmt.Println("=== For Loop for packageNames - parsePaths===") //Harry
+		}
 		g.parsePaths(packageName)
 	}
 }
@@ -251,6 +268,7 @@ func (g *Goas) scanPackages(packages []string) []string {
 func (g *Goas) getRealPackagePath(packagePath string) string {
 	packagePath = strings.Trim(packagePath, "\"")
 
+	// packagePathName := strings.Replace(packagePath, "\\", "-", -1)
 	cachedPackagePath, ok := g.PackagePathCache[packagePath]
 	if ok {
 		return cachedPackagePath
@@ -270,7 +288,8 @@ func (g *Goas) getRealPackagePath(packagePath string) string {
 		})
 
 		for _, pn := range layerPackageNames {
-			evalutedPath, err := filepath.EvalSymlinks(filepath.Join(goPath, "src", pn, "vendor", packagePath))
+			filePath := filepath.Join(goPath, "src", pn, "vendor", packagePath)
+			evalutedPath, err := filepath.EvalSymlinks(filePath)
 			if err == nil {
 				_, err = os.Stat(evalutedPath)
 				if err == nil {
@@ -345,8 +364,14 @@ func (g *Goas) getRealPackagePath(packagePath string) string {
 }
 
 func (g *Goas) parseTypeDefinitions(packageName string) {
+
+	if strings.HasSuffix(packageName, "core") {
+		return
+	}
+
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
+
 	if pkgRealPath == "" {
 		return
 	}
@@ -400,6 +425,7 @@ func parserFileFilter(info os.FileInfo) bool {
 
 // parseImportStatements parses the imported packages of packageName.
 func (g *Goas) parseImportStatements(packageName string) map[string]bool {
+
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
 
@@ -437,22 +463,102 @@ func (g *Goas) parseImportStatements(packageName string) map[string]bool {
 			}
 		}
 	}
+
+	return imports
+}
+
+// parseImportStatements parses the imported packages of packageName.
+func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
+
+	g.CurrentPackage = packageName
+	pkgRealPath := g.getRealPackagePath(packageName)
+
+	imports := map[string]bool{}
+	astPackages := g.getPackageAst(pkgRealPath)
+
+	g.PackageImports[pkgRealPath] = map[string][]string{}
+	for _, astPackage := range astPackages {
+		for _, astFile := range astPackage.Files {
+			for _, astImport := range astFile.Imports {
+				importedPackageName := strings.Trim(astImport.Path.Value, "\"")
+				realPath := g.getRealPackagePath(importedPackageName)
+				if _, ok := g.FuncDefinitions[realPath]; !ok {
+					imports[importedPackageName] = true
+				}
+
+				// Deal with alias of imported package
+				var importedPackageAlias string
+				if astImport.Name != nil && astImport.Name.Name != "." && astImport.Name.Name != "_" {
+					importedPackageAlias = astImport.Name.Name
+				} else {
+					importPath := strings.Split(importedPackageName, "/")
+					importedPackageAlias = importPath[len(importPath)-1]
+				}
+
+				isExists := false
+				for _, v := range g.PackageImports[pkgRealPath][importedPackageAlias] {
+					if v == importedPackageName {
+						isExists = true
+					}
+				}
+				if !isExists {
+					g.PackageImports[pkgRealPath][importedPackageAlias] = append(g.PackageImports[pkgRealPath][importedPackageAlias], importedPackageName)
+				}
+			}
+		}
+	}
+
 	return imports
 }
 
 func (g *Goas) parsePaths(packageName string) {
+
+	if packageName == "gitlab.paradise-soft.com.tw\\routing\\apis\\mock" {
+		fmt.Println("=== parsePaths - mock ===") //Harry
+	}
+	if packageName == "gitlab.paradise-soft.com.tw/routing/apis/mock/loader" {
+		fmt.Println("=== parsePaths - loader ===") //Harry
+	}
+
+	if strings.HasSuffix(packageName, "core") { //Harry
+		return
+	}
+
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
 
+	if pkgRealPath == "" {
+		return
+	}
+	//Harry
+	_, ok := g.FuncDefinitions[pkgRealPath]
+	if !ok {
+		g.FuncDefinitions[pkgRealPath] = map[string]*ast.TypeSpec{}
+	}
+	//Harry
 	astPackages := g.getPackageAst(pkgRealPath)
+
 	for _, astPackage := range astPackages {
-		for _, astFile := range astPackage.Files {
+		for key, astFile := range astPackage.Files {
+			if strings.Contains(key, "C:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\reporting_admin") {
+				fmt.Println("===== In reporting_admin file") //Harry
+			}
 			for _, astDescription := range astFile.Decls {
+				//Harry
+				if generalDeclaration, ok := astDescription.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
+					for _, astSpec := range generalDeclaration.Specs {
+						if typeSpec, ok := astSpec.(*ast.TypeSpec); ok {
+							g.FuncDefinitions[pkgRealPath][typeSpec.Name.String()] = typeSpec
+						}
+					}
+				}
+				//Harry
 				switch astDeclaration := astDescription.(type) {
 				case *ast.FuncDecl:
 					operation := &OperationObject{
 						Responses: map[string]*ResponseObject{},
 					}
+
 					if astDeclaration.Doc != nil && astDeclaration.Doc.List != nil {
 						for _, comment := range astDeclaration.Doc.List {
 							err := g.parseOperation(operation, packageName, comment.Text)
@@ -473,9 +579,14 @@ func (g *Goas) parsePaths(packageName string) {
 			// }
 		}
 	}
+
+	for importedPackage := range g.parsePathImportStatements(packageName) {
+		g.parsePaths(importedPackage)
+	}
 }
 
 func (g *Goas) parseOperation(operation *OperationObject, packageName, comment string) error {
+
 	commentLine := strings.TrimSpace(strings.TrimLeft(comment, "//"))
 	if len(commentLine) == 0 {
 		return nil
@@ -540,7 +651,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 				Format: basicTypesOASFormats[typeName],
 			}
 		} else {
-			_, ok := g.OASSpec.Components.Schemas[typeName]
+			_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 			if ok {
 				parameter.Schema = &SchemaObject{
 					Ref: referenceLink(typeName),
@@ -571,7 +682,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 	}
 	operation.RequestBody.Content[ContentTypeJson] = &MediaTypeObject{}
 
-	_, ok := g.OASSpec.Components.Schemas[typeName]
+	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 	if ok {
 		operation.RequestBody.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
@@ -681,11 +792,10 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 		return err
 	}
 
-	_, ok := g.OASSpec.Components.Schemas[typeName]
+	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
 	if ok {
 		response.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
-			// Ref: typeName,
 		}
 	} else {
 		response.Content[ContentTypeJson].Schema = &SchemaObject{
@@ -698,7 +808,6 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 			Type: "array",
 			Items: &ReferenceObject{
 				Ref: referenceLink(typeName),
-				// Ref: typeName,
 			},
 		}
 	} else if response.Content[ContentTypeJson].Schema.Ref == "" {
@@ -740,40 +849,60 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				}
 			}
 
-			_, ok := g.OASSpec.Components.Schemas[registerType]
+			//Harry: 這邊的registerType是"github.com. ... .example.model.Data"，所以好像不用convert
+			// componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
+			componentsSchemasName := convertRefName(registerType)
+			_, ok := g.OASSpec.Components.Schemas[componentsSchemasName]
 			if !ok {
-				g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
+				g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
 					Type:       "object",
 					Required:   model.Required,
 					Properties: map[string]interface{}{},
 				}
 			}
 
-			for k, v := range model.Properties {
+			for k, v := range model.Properties { //Harry: 塞property給schemas
 				if v.Ref != "" {
 					v.Type = ""
 					v.Items = nil
 					v.Format = ""
 				}
-				g.OASSpec.Components.Schemas[registerType].Properties[k] = v
+				g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
 			}
 
+			//===Harry
+			if len(model.ExtraModel) > 0 {
+				innerModels = append(innerModels, model.ExtraModel...)
+			}
+			// ===Harry
 			for _, m := range innerModels {
 				registerType := m.Id
-				if _, ok := g.OASSpec.Components.Schemas[registerType]; !ok {
-					g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
+				componentsSchemasName := convertRefName(registerType) //Harry: 似乎是不用轉換，因為m.Id本來就是轉換過的
+				if _, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; !ok {
+					g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
 						Type:       "object",
 						Required:   m.Required,
 						Properties: map[string]interface{}{},
 					}
 				}
 				for k, v := range m.Properties {
+					// if v.AllOf != ""{
+					// 	v.Type = ""
+					// 	v.Items = nil
+					// 	v.Format = ""
+					// 	v.AllOf = ""
+
+					// allOfobj := &AllOfObj{}
+					// allOfobj.
+					// g.OASSpec.Components.Schemas[componentsSchemasName].AllOf
+					// }else{
 					if v.Ref != "" {
 						v.Type = ""
 						v.Items = nil
 						v.Format = ""
 					}
-					g.OASSpec.Components.Schemas[registerType].Properties[k] = v
+					g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
+					// }
 				}
 			}
 		}
@@ -786,6 +915,9 @@ type Model struct {
 	Id         string                    `json:"id,omitempty"`
 	Required   []string                  `json:"required,omitempty"`
 	Properties map[string]*ModelProperty `json:"properties,omitempty"`
+	Ref        string                    `json:"$ref,omitempty"`
+
+	ExtraModel []*Model `json:"extramodel,omitempty"` //Harry
 }
 
 type ModelProperty struct {
@@ -818,11 +950,11 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 	astTypeDef, ok := astTypeSpec.Type.(*ast.Ident)
 	if ok {
 		typeDefTranslations[m.Id] = astTypeDef.Name
-	} else if astStructType, ok := astTypeSpec.Type.(*ast.StructType); ok {
-		g.parseFieldList(m, astStructType.Fields.List, modelPackage)
+	} else if astStructType, ok := astTypeSpec.Type.(*ast.StructType); ok { //Harry: 一般Struct型式
+		g.parseFieldList(m, astStructType.Fields.List, modelPackage) //Harry: 把此struct下面的fields都parse過
 		usedTypes := map[string]bool{}
 
-		for _, property := range m.Properties {
+		for _, property := range m.Properties { //Comment: each normal properties will be mapping
 			typeName := property.Type
 			if typeName == "array" {
 				if property.Items.Type != "" {
@@ -866,12 +998,14 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 					}
 					if property.Type != "array" {
 						property.Ref = referenceLink(modelNamesPackageNames[typeName])
-						// property.Ref = modelNamesPackageNames[typeName]
 					} else {
 						property.Items.Ref = referenceLink(modelNamesPackageNames[typeName])
-						// property.Items.Ref = modelNamesPackageNames[typeName]
 					}
 				}
+				continue
+			}
+
+			if property.Ref != "" {
 				continue
 			}
 
@@ -890,7 +1024,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 				for _, property := range m.Properties {
 					if property.Type == "array" {
 						if property.Items.Ref == typeName {
-							property.Items.Ref = referenceLink(typeModel.Id)
+							property.Items.Ref = referenceLink(typeModel.Id) //Harry: Here should be fixed "/" to "-"
 						}
 					} else {
 						if property.Type == typeName {
@@ -921,6 +1055,31 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		// log.Printf("After parse inner model list: %#v\n (%s)", usedTypes, modelName)
 		// log.Fatalf("Inner model list: %#v\n", innerModelList)
 
+	} else if astSelectorExpr, ok := astTypeSpec.Type.(*ast.SelectorExpr); ok {
+		//Harry： If this type is directly equal to other type
+		//EX: type Hits = globPaging.Hits
+
+		modelNameParts = nil
+		if astDataIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
+			modelNameParts = append(modelNameParts, astDataIdent.Name)
+		}
+		modelNameParts = append(modelNameParts, astSelectorExpr.Sel.Name)
+
+		typeModel := &Model{}
+		typeInnerModels, err := g.parseModel(typeModel, modelNameParts[0]+"."+modelNameParts[1], modelPackage, knownModelNames)
+		if err != nil {
+			return nil, err
+		}
+		//EX: m.Id = "gitlab.paradise-soft.com.tw.platform.common.paging.Hits"的properties應該直接等於"gitlab.paradise-soft.com.tw.glob.utils.paging.Hits"
+		// m.Properties = append(m.Properties, typeModel.Properties...)
+		if m.Properties == nil {
+			m.Properties = make(map[string]*ModelProperty)
+		}
+		for k, v := range typeModel.Properties {
+			m.Properties[k] = v
+		}
+		m.ExtraModel = append(m.ExtraModel, typeInnerModels...)
+
 	}
 
 	//log.Printf("ParseModel finished %s \n", modelName)
@@ -938,7 +1097,7 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 		modelPackage = currentPackage
 		model = g.getModelDefinition(modelName, currentPackage)
 		if model == nil {
-			log.Fatalf("Can not find definition of %s model. Current package %s", modelName, currentPackage)
+			log.Fatalf("Can not find definition of [%s] model. Current package [%s]", modelName, currentPackage)
 		}
 	} else {
 		// First try to assume what name is absolute
@@ -961,34 +1120,51 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 				log.Fatalf("Can not find definition of %s model. Package %s dont import anything", modelNameFromPath, pkgRealPath)
 			}
 			relativePackage, ok := imports[modelNameParts[0]]
-			if !ok {
-				log.Fatalf("Package %s is not imported to %s, Imported: %#v\n", modelNameParts[0], currentPackage, imports)
-			}
+			// if !ok {
+			// 	log.Fatalf("Package %s is not imported to %s, Imported: %#v\n", modelNameParts[0], currentPackage, imports)
+			// }
+			if ok {
+				var modelFound bool
+				for _, packageName := range relativePackage {
+					model = g.getModelDefinition(modelNameFromPath, packageName)
+					if model != nil {
+						modelPackage = packageName
+						modelFound = true
 
-			var modelFound bool
-			for _, packageName := range relativePackage {
-				model = g.getModelDefinition(modelNameFromPath, packageName)
-				if model != nil {
-					modelPackage = packageName
-					modelFound = true
-
-					break
+						break
+					}
 				}
-			}
-			if !modelFound {
-				log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
+				if !modelFound {
+					log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
+				}
+			} else {
+				//Harry: If the model do not import from "currentPackage". Directly find "model" from g.TypeDefinitions
+
+				var modelFound bool
+
+				for modelPkgPath, models := range g.TypeDefinitions {
+					if strings.HasSuffix(modelPkgPath, modelNameParts[0]) {
+						model = models[modelNameParts[1]]
+						modelFound = true
+					}
+				}
+				if !modelFound {
+					log.Fatalf("Can not find definition of %s model in GOAS.TypeDefinition", modelNameFromPath)
+				}
+
 			}
 		}
 	}
 	return model, modelPackage
 }
 
+//Harry: Can not find definition of "string"
 func (g *Goas) getModelDefinition(model string, packageName string) *ast.TypeSpec {
 	pkgRealPath := g.getRealPackagePath(packageName)
 	if pkgRealPath == "" {
 		return nil
 	}
-	packageModels, ok := g.TypeDefinitions[pkgRealPath]
+	packageModels, ok := g.TypeDefinitions[pkgRealPath] //Harry: Under parsePath. Maybe need be fixed to g.FuncDefinitions
 	if !ok {
 		return nil
 	}
@@ -1024,8 +1200,15 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 	reInternalRepresentation := regexp.MustCompile("&\\{(\\w*) (\\w*)\\}")
 	typeAsString = string(reInternalRepresentation.ReplaceAll([]byte(typeAsString), []byte("$1.$2")))
 
-	// fmt.Println(m.Id, typeAsString)
-
+	//Harry: Determine if it's Core
+	if strings.Contains(typeAsString, "core.") {
+		typeAsString = strings.Replace(typeAsString, "core.", "", -1)
+		if typeAsString == "DateTime" {
+			typeAsString = "datetime"
+		} else {
+			typeAsString = strings.ToLower(typeAsString)
+		}
+	}
 	if strings.HasPrefix(typeAsString, "[]") {
 		property.Type = "array"
 		g.setItemType(property, typeAsString[2:])
@@ -1038,23 +1221,33 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		property.Type = "interface"
 	} else if typeAsString == "time.Time" {
 		property.Type = "Time"
+		// property.Type = "datetime"
+	} else if typeAsString == "interface" {
+		return
 	} else {
 		property.Type = typeAsString
 	}
 
-	if len(field.Names) == 0 {
-		if astSelectorExpr, ok := field.Type.(*ast.SelectorExpr); ok {
-			packageName := modelPackage
+	if len(field.Names) == 0 { //如果找不到field.Names，可能是繼承其他struct，所以需要去掃這個field的model
+		if astSelectorExpr, ok := field.Type.(*ast.SelectorExpr); ok { //
+			packageName := modelPackage //Harry: Maybe 'modelPackage' doesn't same with package of this type
 			if astTypeIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
 				packageName = astTypeIdent.Name
 			}
-
 			name = packageName + "." + strings.TrimPrefix(astSelectorExpr.Sel.Name, "*")
-		} else if astTypeIdent, ok := field.Type.(*ast.Ident); ok {
+		} else if astTypeIdent, ok := field.Type.(*ast.Ident); ok { //Harry: Normal situation
 			name = astTypeIdent.Name
-		} else if astStarExpr, ok := field.Type.(*ast.StarExpr); ok {
-			if astIdent, ok := astStarExpr.X.(*ast.Ident); ok {
-				name = astIdent.Name
+		} else if astStarExpr, ok := field.Type.(*ast.StarExpr); ok { //Harry: Be used by 'pointer'
+			if astStarExprX, ok := astStarExpr.X.(*ast.SelectorExpr); ok {
+				//Harry: import from other package
+				//Ex: *model.Data
+				if astDataIdent, ok := astStarExprX.X.(*ast.Ident); ok {
+					name = astDataIdent.Name + "." + astStarExprX.Sel.Name
+				}
+			} else if astTypeIdent, ok := astStarExpr.X.(*ast.Ident); ok {
+				//Harry: import from currently package
+				//Ex: *Data
+				name = astTypeIdent.Name
 			}
 		} else {
 			log.Fatalf("Something goes wrong: %#v", field.Type)
@@ -1063,11 +1256,18 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		//log.Printf("Try to parse embeded type %s \n", name)
 		//log.Fatalf("DEBUG: field: %#v\n, selector.X: %#v\n selector.Sel: %#v\n", field, astSelectorExpr.X, astSelectorExpr.Sel)
 		knownModelNames := map[string]bool{}
+
 		g.parseModel(innerModel, name, modelPackage, knownModelNames)
 
 		for innerFieldName, innerField := range innerModel.Properties {
 			m.Properties[innerFieldName] = innerField
 		}
+
+		// ===Harry
+		if len(innerModel.ExtraModel) > 0 {
+			m.ExtraModel = append(m.ExtraModel, innerModel.ExtraModel...)
+		}
+		// ===Harry
 
 		//log.Fatalf("Here %#v\n", field.Type)
 		return

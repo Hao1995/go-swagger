@@ -102,8 +102,15 @@ type SchemaObject struct {
 
 	// Ref is for ReferenceObject
 	Ref string `json:"$ref,omitempty"`
+
+	// AllOf []AllOfObj `json:"allOf,omitempty"` //Harry
 }
 
+// type AllOfObj struct { //Harry
+// 	Ref        string                 `json:"$ref,omitempty"`
+// 	Type       string                 `json:"type,omitempty"`
+// 	Properties map[string]interface{} `json:"properties,omitempty"`
+// }
 type ReferenceObject struct {
 	Ref string `json:"$ref,omitempty"`
 }
