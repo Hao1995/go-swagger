@@ -52,6 +52,9 @@ func New() *Goas {
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
 	// gopath = strings.ToLower(gopath)                                          //Harry
 
+	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
+	gopath = strings.ToLower(gopath)                                   //Harry
+
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
 		gopaths = strings.Split(gopath, ";")
