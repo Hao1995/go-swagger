@@ -28,7 +28,7 @@ type Goas struct {
 	CurrentPackage   string
 	PackagePathCache map[string]string
 	TypeDefinitions  map[string]map[string]*ast.TypeSpec
-	FuncDefinitions  map[string]map[string]*ast.TypeSpec //Harry
+	FuncDefinitions  map[string]bool //Harry
 	PackagesCache    map[string]map[string]*ast.Package
 	PackageImports   map[string]map[string][]string
 
@@ -82,7 +82,7 @@ func New() *Goas {
 		OASSpec:          &OASSpecObject{},
 		PackagePathCache: map[string]string{},
 		TypeDefinitions:  map[string]map[string]*ast.TypeSpec{},
-		FuncDefinitions:  map[string]map[string]*ast.TypeSpec{},
+		FuncDefinitions:  map[string]bool{},
 		PackagesCache:    map[string]map[string]*ast.Package{},
 		PackageImports:   map[string]map[string][]string{},
 	}
@@ -520,10 +520,10 @@ func (g *Goas) parsePaths(packageName string) {
 	if pkgRealPath == "" {
 		return
 	}
-	//Harry ===
+	//Harry === Check this 'pkgRealPath' exists or not.
 	_, ok := g.FuncDefinitions[pkgRealPath]
 	if !ok {
-		g.FuncDefinitions[pkgRealPath] = map[string]*ast.TypeSpec{}
+		g.FuncDefinitions[pkgRealPath] = true
 	}
 	if strings.HasSuffix(pkgRealPath, "core") { //Harry: Filter "core" package
 		return
@@ -535,15 +535,6 @@ func (g *Goas) parsePaths(packageName string) {
 	for _, astPackage := range astPackages {
 		for _, astFile := range astPackage.Files {
 			for _, astDescription := range astFile.Decls {
-				//Harry
-				if generalDeclaration, ok := astDescription.(*ast.GenDecl); ok && generalDeclaration.Tok == token.TYPE {
-					for _, astSpec := range generalDeclaration.Specs {
-						if typeSpec, ok := astSpec.(*ast.TypeSpec); ok {
-							g.FuncDefinitions[pkgRealPath][typeSpec.Name.String()] = typeSpec
-						}
-					}
-				}
-				//Harry
 				switch astDeclaration := astDescription.(type) {
 				case *ast.FuncDecl:
 					operation := &OperationObject{
@@ -1156,7 +1147,7 @@ func (g *Goas) getModelDefinition(model string, packageName string) *ast.TypeSpe
 	if pkgRealPath == "" {
 		return nil
 	}
-	packageModels, ok := g.TypeDefinitions[pkgRealPath] //Harry: Under parsePath. Maybe need be fixed to g.FuncDefinitions
+	packageModels, ok := g.TypeDefinitions[pkgRealPath]
 	if !ok {
 		return nil
 	}
