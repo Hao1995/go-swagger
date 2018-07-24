@@ -49,8 +49,8 @@ func New() *Goas {
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
 	// gopath = strings.ToLower(gopath) //Harry
 
-	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
-	gopath = strings.ToLower(gopath)                                          //Harry
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
+	// gopath = strings.ToLower(gopath)                                          //Harry
 
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
 	// gopath = strings.ToLower(gopath)                                   //Harry
@@ -585,6 +585,11 @@ func (g *Goas) parseOperation(operation *OperationObject, packageName, comment s
 		if err != nil {
 			return err
 		}
+	case "@paramstruct":
+		err := g.parseParamStructComment(operation, strings.TrimSpace(commentLine[len(attribute):]))
+		if err != nil {
+			return err
+		}
 	case "@success", "@failure":
 		err := g.parseResponseComment(operation, strings.TrimSpace(commentLine[len(attribute):]))
 		if err != nil {
@@ -687,6 +692,26 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 	} else if operation.RequestBody.Content[ContentTypeJson].Schema.Ref == "" {
 		operation.RequestBody.Content[ContentTypeJson].Schema.Type = typeName
 	}
+
+	return nil
+}
+
+func (g *Goas) parseParamStructComment(operation *OperationObject, commentLine string) error {
+	paramString := commentLine
+
+	re := regexp.MustCompile(`([\w.]+)`) //Harry: @ParamStruct reporting.DailyReporting
+
+	matches := re.FindStringSubmatch(paramString)
+	if len(matches) != 2 {
+		return fmt.Errorf("Can not parse paramStruct comment \"%s\", skipped", paramString)
+	}
+
+	params, err := g.registerTypeToParamStruct(matches[1])
+	if err != nil {
+		return err
+	}
+
+	operation.Parameters = append(operation.Parameters, params...)
 
 	return nil
 }
@@ -853,11 +878,11 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
 			}
 
-			//===Harry
+			//Harry === Be used to parse the type directly equal other type
 			if len(model.ExtraModel) > 0 {
 				innerModels = append(innerModels, model.ExtraModel...)
 			}
-			// ===Harry
+			//Harry ===
 			for _, m := range innerModels {
 				registerType := m.Id
 				componentsSchemasName := convertRefName(registerType) //Harry: 似乎是不用轉換，因為m.Id本來就是轉換過的
@@ -894,6 +919,48 @@ func (g *Goas) registerType(typeName string) (string, error) {
 	return registerType, nil
 }
 
+func (g *Goas) registerTypeToParamStruct(typeName string) ([]*ParameterObject, error) {
+
+	registerType, err := g.registerType(typeName)
+	if err != nil {
+		return nil, err
+	}
+
+	//Harry === Parse params from g.OASSpec.Components.Schemas
+	params := []*ParameterObject{}
+	componentsSchemasName := convertRefName(registerType)
+	if schemaObj, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; ok {
+		for paramName, property := range schemaObj.Properties {
+			param := &ParameterObject{}
+			propertyModel := property.(*ModelProperty)
+
+			findRequired := func(paramName string, schemaObj *SchemaObject) bool {
+				flag := false
+				for _, requiredName := range schemaObj.Required {
+					if requiredName == paramName {
+						flag = true
+						break
+					}
+				}
+				return flag
+			}
+
+			param.Name = paramName
+			param.In = "query"
+			param.Description = propertyModel.Description
+			param.Required = findRequired(paramName, schemaObj)
+			param.Schema = &SchemaObject{
+				Type:   propertyModel.Type,
+				Format: propertyModel.Format,
+			}
+
+			params = append(params, param)
+		}
+	}
+
+	return params, nil
+}
+
 type Model struct {
 	Id         string                    `json:"id,omitempty"`
 	Required   []string                  `json:"required,omitempty"`
@@ -904,11 +971,12 @@ type Model struct {
 }
 
 type ModelProperty struct {
-	Ref         string              `json:"$ref,omitempty"`
-	Type        string              `json:"type,omitempty"`
 	Description string              `json:"description,omitempty"`
+	Required    bool                `json:"required,omitempty"`
+	Type        string              `json:"type,omitempty"`
 	Format      string              `json:"format,omitempty"`
 	Items       *ModelPropertyItems `json:"items,omitempty"`
+	Ref         string              `json:"$ref,omitempty"`
 }
 
 type ModelPropertyItems struct {
