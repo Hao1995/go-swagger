@@ -3,8 +3,8 @@
 
 Generate [OpenAPI Specification](https://swagger.io/specification) json file with comments in Go.
 
-##基本註解寫法
-###Info
+## 基本註解寫法
+### Info
 將以下資訊寫在此API服務的main.go檔案</br>
 '＊'代表必填</br>
 
@@ -34,7 +34,7 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 
 </br>
 </br>
-###Operation
+### Operation
 將以下資訊寫在此專案下的任一檔案(通常是寫在該api的function上)，但**務必**寫在該function正上方，中間請勿有任何**段落**
 '＊'代表必填
 
@@ -57,7 +57,7 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 **@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)
 **@Router** - ＊手動寫下api路徑，以及其method
 
-##Struct 範例
+## Struct 範例
 ```perl
 type DailyReportingConds struct {
     StartTime    core.DateTime `json:"starttime,required" description:"Start Time"`
@@ -70,7 +70,7 @@ type DailyReportingConds struct {
 ```
 
 </br>
-##使用方法
+## 使用方法
 
 按照上面的教學，在你的專案寫下註解之後，遵循以下作法就可以產出對應API Doc
 
@@ -100,7 +100,7 @@ cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 貼到[Swagger Editor](http://editor.swagger.io/)
 就可以輸入參數並測試API了
 
-##其他
+## 其他
 因為寫@Success、@Failure的時候，是直接讀取struct裡面的fields，但目前許多報表都是採用interface的作法
 ```perl
 type Hits struct{
