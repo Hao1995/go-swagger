@@ -49,11 +49,11 @@ func New() *Goas {
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
 	// gopath = strings.ToLower(gopath) //Harry
 
-	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
-	// gopath = strings.ToLower(gopath)                                          //Harry
+	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
+	gopath = strings.ToLower(gopath)                                          //Harry
 
-	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
-	gopath = strings.ToLower(gopath)                                   //Harry
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
+	// gopath = strings.ToLower(gopath)                                   //Harry
 
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
@@ -150,9 +150,6 @@ func (g *Goas) parseInfo() {
 	}
 
 	g.OASSpec.OnpenAPI = OpenAPIVersion
-	// g.OASSpec.Servers = []*ServerObject{{
-	// 	URL: "/",
-	// }}
 	g.OASSpec.Info = &InfoObject{}
 	g.OASSpec.Paths = map[string]*PathItemObject{}
 
@@ -165,7 +162,6 @@ func (g *Goas) parseInfo() {
 					g.OASSpec.Servers = []*ServerObject{{
 						URL: strings.TrimSpace(commentLine[len(attribute):]),
 					}}
-					// g.OASSpec.Info.Version = strings.TrimSpace(commentLine[len(attribute):])
 				case "@version":
 					g.OASSpec.Info.Version = strings.TrimSpace(commentLine[len(attribute):])
 				case "@title":
@@ -366,10 +362,6 @@ func (g *Goas) getRealPackagePath(packagePath string) string {
 
 func (g *Goas) parseTypeDefinitions(packageName string) {
 
-	if strings.HasSuffix(packageName, "core") {
-		return
-	}
-
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
 
@@ -378,10 +370,16 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 	}
 	//	log.Printf("Parse type definition of %#v\n", packageName)
 
+	//Harry
 	_, ok := g.TypeDefinitions[pkgRealPath]
 	if !ok {
 		g.TypeDefinitions[pkgRealPath] = map[string]*ast.TypeSpec{}
 	}
+	if strings.HasSuffix(pkgRealPath, "core") { //Harry: Filter "core" package
+		return
+	}
+	//Harry
+
 	astPackages := g.getPackageAst(pkgRealPath)
 	for _, astPackage := range astPackages {
 		for _, astFile := range astPackage.Files {
@@ -397,7 +395,7 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 		}
 	}
 
-	for importedPackage, _ := range g.parseImportStatements(packageName) {
+	for importedPackage := range g.parseImportStatements(packageName) {
 		g.parseTypeDefinitions(importedPackage)
 	}
 }
@@ -468,7 +466,7 @@ func (g *Goas) parseImportStatements(packageName string) map[string]bool {
 	return imports
 }
 
-// parseImportStatements parses the imported packages of packageName.
+// parseImportStatements : by Harry. just be used by parsePath.
 func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 
 	g.CurrentPackage = packageName
@@ -482,10 +480,12 @@ func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 		for _, astFile := range astPackage.Files {
 			for _, astImport := range astFile.Imports {
 				importedPackageName := strings.Trim(astImport.Path.Value, "\"")
+				//Harry
 				realPath := g.getRealPackagePath(importedPackageName)
 				if _, ok := g.FuncDefinitions[realPath]; !ok {
 					imports[importedPackageName] = true
 				}
+				//Harry
 
 				// Deal with alias of imported package
 				var importedPackageAlias string
@@ -514,22 +514,22 @@ func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 
 func (g *Goas) parsePaths(packageName string) {
 
-	if strings.HasSuffix(packageName, "core") { //Harry
-		return
-	}
-
 	g.CurrentPackage = packageName
 	pkgRealPath := g.getRealPackagePath(packageName)
 
 	if pkgRealPath == "" {
 		return
 	}
-	//Harry
+	//Harry ===
 	_, ok := g.FuncDefinitions[pkgRealPath]
 	if !ok {
 		g.FuncDefinitions[pkgRealPath] = map[string]*ast.TypeSpec{}
 	}
+	if strings.HasSuffix(pkgRealPath, "core") { //Harry: Filter "core" package
+		return
+	}
 	//Harry
+
 	astPackages := g.getPackageAst(pkgRealPath)
 
 	for _, astPackage := range astPackages {
@@ -570,10 +570,11 @@ func (g *Goas) parsePaths(packageName string) {
 			// }
 		}
 	}
-
+	//Harry === Parse import path
 	for importedPackage := range g.parsePathImportStatements(packageName) {
 		g.parsePaths(importedPackage)
 	}
+	//Harry
 }
 
 func (g *Goas) parseOperation(operation *OperationObject, packageName, comment string) error {
