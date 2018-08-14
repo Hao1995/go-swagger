@@ -49,8 +49,8 @@ func New() *Goas {
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
 	// gopath = strings.ToLower(gopath) //Harry
 
-	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
-	// gopath = strings.ToLower(gopath)                                          //Harry
+	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
+	gopath = strings.ToLower(gopath)                                          //Harry
 
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
 	// gopath = strings.ToLower(gopath)                                   //Harry
@@ -922,24 +922,11 @@ func (g *Goas) registerTypeToParamStruct(typeName string) ([]*ParameterObject, e
 		return nil, err
 	}
 
-	//Harry === Parse params from g.OASSpec.Components.Schemas
 	params := []*ParameterObject{}
 	if schemaObj, ok := g.OASSpec.Components.Schemas[registerType]; ok {
 		for paramName, property := range schemaObj.Properties {
 			param := &ParameterObject{}
 			propertyModel := property.(*ModelProperty)
-
-			//Harry: should declare this func at outside
-			findRequired := func(paramName string, schemaObj *SchemaObject) bool {
-				flag := false
-				for _, requiredName := range schemaObj.Required {
-					if requiredName == paramName {
-						flag = true
-						break
-					}
-				}
-				return flag
-			}
 
 			param.Name = paramName
 			param.In = "query"
@@ -1073,7 +1060,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 				for _, property := range m.Properties {
 					if property.Type == "array" {
 						if property.Items.Ref == typeName {
-							property.Items.Ref = referenceLink(typeModel.Id) //Harry: Here should be fixed "/" to "-"
+							property.Items.Ref = referenceLink(typeModel.Id)
 						}
 					} else {
 						if property.Type == typeName {

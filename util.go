@@ -170,3 +170,15 @@ func getTypeAsString(fieldType interface{}) string {
 	// log.Printf("Get type as string(no star expression)! %#v , type: %s\n", fieldType, fmt.Sprint(fieldType))
 	return fmt.Sprint(fieldType)
 }
+
+//Check the param whether exists in required list.
+func findRequired(paramName string, schemaObj *SchemaObject) bool {
+	flag := false
+	for _, requiredName := range schemaObj.Required {
+		if requiredName == paramName {
+			flag = true
+			break
+		}
+	}
+	return flag
+}
