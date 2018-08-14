@@ -934,6 +934,7 @@ func (g *Goas) registerTypeToParamStruct(typeName string) ([]*ParameterObject, e
 			param := &ParameterObject{}
 			propertyModel := property.(*ModelProperty)
 
+			//Harry: should declare this func at outside
 			findRequired := func(paramName string, schemaObj *SchemaObject) bool {
 				flag := false
 				for _, requiredName := range schemaObj.Required {
@@ -999,6 +1000,8 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 
 	var innerModelList []*Model
 	astTypeDef, ok := astTypeSpec.Type.(*ast.Ident)
+	//Harry: type直接等於basic type
+	//EX: type BasicModel = string
 	if ok {
 		typeDefTranslations[m.Id] = astTypeDef.Name
 	} else if astStructType, ok := astTypeSpec.Type.(*ast.StructType); ok { //Harry: 一般Struct型式
@@ -1112,6 +1115,8 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 
 		modelNameParts = nil
 		if astDataIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
+			//Harry: get package name
+			//ex: globPaging
 			modelNameParts = append(modelNameParts, astDataIdent.Name)
 		}
 		modelNameParts = append(modelNameParts, astSelectorExpr.Sel.Name)
@@ -1254,11 +1259,11 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 	//Harry: Determine if it's Core
 	if strings.Contains(typeAsString, "core.") {
 		typeAsString = strings.Replace(typeAsString, "core.", "", -1)
-		if typeAsString == "DateTime" {
-			typeAsString = "datetime"
-		} else {
-			typeAsString = strings.ToLower(typeAsString)
-		}
+		// if typeAsString == "DateTime" {
+		// 	typeAsString = "datetime"
+		// } else {
+		typeAsString = strings.ToLower(typeAsString)
+		// }
 	}
 	if strings.HasPrefix(typeAsString, "[]") {
 		property.Type = "array"
@@ -1271,7 +1276,7 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 	} else if strings.HasPrefix(typeAsString, "map[]") {
 		property.Type = "interface"
 	} else if typeAsString == "time.Time" {
-		property.Type = "Time"
+		property.Type = "time"
 		// property.Type = "datetime"
 	} else if typeAsString == "interface" {
 		return

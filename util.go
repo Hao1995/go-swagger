@@ -95,7 +95,7 @@ var basicTypesOASTypes = map[string]string{
 	"float32":  "number",
 	"float64":  "number",
 	"string":   "string",
-	"Time":     "string",
+	"time":     "string",
 	"datetime": "string",
 	// "file":    "formData",
 }
@@ -120,7 +120,7 @@ var basicTypesOASFormats = map[string]string{
 	"float32":  "float",
 	"float64":  "double",
 	"string":   "string",
-	"Time":     "date-time",
+	"time":     "date-time",
 	"datetime": "date-time",
 }
 
