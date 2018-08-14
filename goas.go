@@ -46,14 +46,16 @@ func New() *Goas {
 		log.Fatal("$GOPATH environment variable is empty.")
 	}
 
+	//===Harry
 	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
-	// gopath = strings.ToLower(gopath) //Harry
+	// gopath = strings.ToLower(gopath)
 
-	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock" //Harry
-	gopath = strings.ToLower(gopath)                                          //Harry
+	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock"
+	gopath = strings.ToLower(gopath)
 
-	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh" //Harry
-	// gopath = strings.ToLower(gopath)                                   //Harry
+	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh"
+	// gopath = strings.ToLower(gopath)
+	//===end
 
 	gopaths := strings.Split(gopath, ":")
 	if runtime.GOOS == "windows" {
@@ -518,15 +520,15 @@ func (g *Goas) parsePaths(packageName string) {
 	if pkgRealPath == "" {
 		return
 	}
-	//Harry === Check this 'pkgRealPath' exists or not.
+	//===Harry Check this 'pkgRealPath' exists or not.
 	_, ok := g.FuncDefinitions[pkgRealPath]
 	if !ok {
 		g.FuncDefinitions[pkgRealPath] = true
 	}
-	if strings.HasSuffix(pkgRealPath, "core") { //Harry: Filter "core" package
+	if strings.HasSuffix(pkgRealPath, "core") {
 		return
 	}
-	//Harry
+	//===end
 
 	astPackages := g.getPackageAst(pkgRealPath)
 
@@ -559,11 +561,11 @@ func (g *Goas) parsePaths(packageName string) {
 			// }
 		}
 	}
-	//Harry === Parse import path
+	//===Harry Parse import path
 	for importedPackage := range g.parsePathImportStatements(packageName) {
 		g.parsePaths(importedPackage)
 	}
-	//Harry
+	//=== end
 }
 
 func (g *Goas) parseOperation(operation *OperationObject, packageName, comment string) error {
@@ -873,11 +875,11 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				g.OASSpec.Components.Schemas[registerType].Properties[k] = v
 			}
 
-			//Harry === Be used to parse the type directly equal other type
+			//===Harry Be used to parse the type directly equal other type
 			if len(model.ExtraModel) > 0 {
 				innerModels = append(innerModels, model.ExtraModel...)
 			}
-			//Harry ===
+			//===end
 			for _, m := range innerModels {
 				registerType := m.Id
 				if _, ok := g.OASSpec.Components.Schemas[registerType]; !ok {
@@ -1275,7 +1277,7 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		if len(innerModel.ExtraModel) > 0 {
 			m.ExtraModel = append(m.ExtraModel, innerModel.ExtraModel...)
 		}
-		// ===Harry
+		// ===end
 
 		//log.Fatalf("Here %#v\n", field.Type)
 		return
