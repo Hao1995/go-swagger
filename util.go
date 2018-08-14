@@ -170,7 +170,3 @@ func getTypeAsString(fieldType interface{}) string {
 	// log.Printf("Get type as string(no star expression)! %#v , type: %s\n", fieldType, fmt.Sprint(fieldType))
 	return fmt.Sprint(fieldType)
 }
-
-func convertRefName(ref string) string {
-	return strings.Replace(ref, "\\", "-", -1)
-}
