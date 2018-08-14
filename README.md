@@ -4,10 +4,13 @@
 Generate [OpenAPI Specification](https://swagger.io/specification) json file with comments in Go.
 
 ## 基本註解寫法
-### Info
-將以下資訊寫在此API服務的main.go檔案   
-'＊'代表必填   
 
+```
+將以下資訊寫在此API服務的main.go檔案(這樣才可以抓的到所有import的package) 
+'＊'代表整行註解都是必填，沒有此符號的話，代表都不用填。
+```
+
+### Info
 ```
 // @ServersURL http://10.200.252.121:8000
 // @Version 1.0.0 
@@ -21,21 +24,20 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 // @LicenseName MIT
 ```
 
-**@ServersURL** - ＊ Host      
-**@Version** - ＊ 版本   
-**@Title** - ＊ 標題   
-**@Description** - 說明   
-**@ContactName** - 聯絡人   
-**@ContactEmail** - 聯絡信箱   
-**@ContactURL** - 聯絡人網站   
-**@TermsOfServiceUrl** - 服務條款網址   
-**@LicenseURL** - License種類   
-**@LicenseName** - License的網址   
-
-   
+**＊@ServersURL** - Host      
+**＊@Version** - 版本   
+**＊@Title** - 標題   
+　**@Description** - 說明   
+　**@ContactName** - 聯絡人   
+　**@ContactEmail** - 聯絡信箱   
+　**@ContactURL** - 聯絡人網站   
+　**@TermsOfServiceUrl** - 服務條款網址   
+　**@LicenseURL** - License種類   
+　**@LicenseName** - License的網址   
+　　
+　　
 ### Operation
-將以下資訊寫在此專案下的任一檔案(通常是寫在該api的function上)，但**務必**寫在該function正上方，中間請勿有任何**段落**   
-'＊'代表必填   
+將以下資訊寫在此專案下的任一檔案(通常是寫在該api的function上)，但**務必**寫在該function正上方，中間請勿有任何**段落** 
 
 ```
 // @Title Get user list of a group.
@@ -47,14 +49,14 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 // @Resource users
 // @Router /api/group/{group_id}/users [get]
 ```
-
-**@Title** - 此api的標題   
-**@Description** - 此api的描述   
-**@Param** - 此api的各個param   
-**@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何required、description參數都寫在該struct裡面   
-**@Success/@Failure** - ＊此api的回傳結果。使用Success或Failure在產出結果上沒有差異，主要是根據後面的http status code(200, 400, 500 ...)來指定不一定的回傳結果   
-**@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)   
-**@Router** - ＊手動寫下api路徑，以及其method   
+　
+　**@Title** - 此api的標題   
+　**@Description** - 此api的描述   
+　**@Param** - 此api的各個param   
+　**@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何　required、description參數都寫在該struct裡面   
+**＊@Success/@Failure** - 此api的回傳結果。使用Success或Failure在產出結果上沒有差異，主要是根據後面的http status code(200, 400, 500 ...)來指定不一定的回傳結果   
+　**@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)   
+**＊@Router** - ＊手動寫下api路徑，以及其method   
 
    
 ## Struct 範例
@@ -74,19 +76,19 @@ type DailyReportingConds struct {
 
 按照上面的教學，在你的專案寫下註解之後，遵循以下作法就可以產出對應API Doc   
 
-打開cmd(*~~vscode的不行，原因不明~~*)
+打開cmd/bash(*~~vscode的不行，原因不明~~*)
 ```
 go get -u -v --insecure gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+```
+編譯執行檔案
+```
+go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
 ```
 進入你要產生API Doc的專案位置
 ```
 cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 ```
-執行產生API Doc的指令
-```
-"C:\gotool\src\gitlab.paradise-soft.com.tw\backend\goas\cmd\goas\goas" --output oas.json
-```
-也可以把goas檔案丟到"C:\gotool\bin"，然後輸入以下指令
+輸入以下指令，以產出API Doc
 ```
 %GOPATH%\bin\goas --output oas.json
 ```
@@ -100,6 +102,22 @@ cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 貼到[Swagger Editor](http://editor.swagger.io/)
 就可以輸入參數並測試API了
 
+如果上述產API Doc時發生問題  
+檢查"C:\gotool\bin"下面有無"goas.exe"的檔案  
+沒有的話請執行以下，以編譯執行檔
+```
+go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+```
+或是直接到repo下，執行go build產生執行檔，並移動檔案到"C:\gotool\bin"下面
+```
+cd /d "C:\gotool\src\gitlab.paradise-soft.com.tw\backend\goas\cmd\goas"
+go build
+<!-- 移動goas.exe到"C:\gotool\bin"下面 -->
+```
+輸入以下指令，以產出API Doc
+```
+%GOPATH%\bin\goas --output oas.json
+```
    
 ## 其他
 因為寫@Success、@Failure的時候，是直接讀取struct裡面的fields，但目前許多報表都是採用interface的作法
@@ -122,5 +140,6 @@ type DailyReportingPager struct {
 // @Success 200 {object} reporting.DailyReportingPager "每日報表回傳格式"
 ```
 
-
+## 尚不支援
+* 該API無回傳內容
 
