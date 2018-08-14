@@ -28,7 +28,7 @@ type Goas struct {
 	CurrentPackage   string
 	PackagePathCache map[string]string
 	TypeDefinitions  map[string]map[string]*ast.TypeSpec
-	FuncDefinitions  map[string]bool //Harry
+	FuncDefinitions  map[string]bool
 	PackagesCache    map[string]map[string]*ast.Package
 	PackageImports   map[string]map[string][]string
 
@@ -370,15 +370,15 @@ func (g *Goas) parseTypeDefinitions(packageName string) {
 	}
 	//	log.Printf("Parse type definition of %#v\n", packageName)
 
-	//Harry
+	//===Harry
 	_, ok := g.TypeDefinitions[pkgRealPath]
 	if !ok {
 		g.TypeDefinitions[pkgRealPath] = map[string]*ast.TypeSpec{}
 	}
-	if strings.HasSuffix(pkgRealPath, "core") { //Harry: Filter "core" package
+	if strings.HasSuffix(pkgRealPath, "core") {
 		return
 	}
-	//Harry
+	//===end
 
 	astPackages := g.getPackageAst(pkgRealPath)
 	for _, astPackage := range astPackages {
@@ -466,7 +466,6 @@ func (g *Goas) parseImportStatements(packageName string) map[string]bool {
 	return imports
 }
 
-// parseImportStatements : by Harry. just be used by parsePath.
 func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 
 	g.CurrentPackage = packageName
@@ -480,12 +479,11 @@ func (g *Goas) parsePathImportStatements(packageName string) map[string]bool {
 		for _, astFile := range astPackage.Files {
 			for _, astImport := range astFile.Imports {
 				importedPackageName := strings.Trim(astImport.Path.Value, "\"")
-				//Harry
+
 				realPath := g.getRealPackagePath(importedPackageName)
 				if _, ok := g.FuncDefinitions[realPath]; !ok {
 					imports[importedPackageName] = true
 				}
-				//Harry
 
 				// Deal with alias of imported package
 				var importedPackageAlias string
@@ -866,7 +864,7 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				}
 			}
 
-			for k, v := range model.Properties { //Harry: 塞property給schemas
+			for k, v := range model.Properties {
 				if v.Ref != "" {
 					v.Type = ""
 					v.Items = nil
@@ -950,7 +948,7 @@ type Model struct {
 	Properties map[string]*ModelProperty `json:"properties,omitempty"`
 	Ref        string                    `json:"$ref,omitempty"`
 
-	ExtraModel []*Model `json:"extramodel,omitempty"` //Harry
+	ExtraModel []*Model `json:"extramodel,omitempty"`
 }
 
 type ModelProperty struct {
@@ -987,10 +985,10 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 	if ok {
 		typeDefTranslations[m.Id] = astTypeDef.Name
 	} else if astStructType, ok := astTypeSpec.Type.(*ast.StructType); ok { //Harry: 一般Struct型式
-		g.parseFieldList(m, astStructType.Fields.List, modelPackage) //Harry: 把此struct下面的fields都parse過
+		g.parseFieldList(m, astStructType.Fields.List, modelPackage)
 		usedTypes := map[string]bool{}
 
-		for _, property := range m.Properties { //Comment: each normal properties will be mapping
+		for _, property := range m.Properties {
 			typeName := property.Type
 			if typeName == "array" {
 				if property.Items.Type != "" {
@@ -1092,13 +1090,10 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		// log.Fatalf("Inner model list: %#v\n", innerModelList)
 
 	} else if astSelectorExpr, ok := astTypeSpec.Type.(*ast.SelectorExpr); ok {
-		//Harry： If this type is directly equal to other type
-		//EX: type Hits = globPaging.Hits
-
+		//Harry: If this type is directly equal to other type. EX: type Hits = globPaging.Hits
 		modelNameParts = nil
 		if astDataIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
-			//Harry: get package name
-			//ex: globPaging
+			//Harry: get package name. ex: globPaging
 			modelNameParts = append(modelNameParts, astDataIdent.Name)
 		}
 		modelNameParts = append(modelNameParts, astSelectorExpr.Sel.Name)
@@ -1180,7 +1175,6 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 	return model, modelPackage
 }
 
-//Harry: Can not find definition of "string"
 func (g *Goas) getModelDefinition(model string, packageName string) *ast.TypeSpec {
 	pkgRealPath := g.getRealPackagePath(packageName)
 	if pkgRealPath == "" {
@@ -1222,14 +1216,9 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 	reInternalRepresentation := regexp.MustCompile("&\\{(\\w*) (\\w*)\\}")
 	typeAsString = string(reInternalRepresentation.ReplaceAll([]byte(typeAsString), []byte("$1.$2")))
 
-	//Harry: Determine if it's Core
 	if strings.Contains(typeAsString, "core.") {
 		typeAsString = strings.Replace(typeAsString, "core.", "", -1)
-		// if typeAsString == "DateTime" {
-		// 	typeAsString = "datetime"
-		// } else {
 		typeAsString = strings.ToLower(typeAsString)
-		// }
 	}
 	if strings.HasPrefix(typeAsString, "[]") {
 		property.Type = "array"
@@ -1243,7 +1232,6 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 		property.Type = "interface"
 	} else if typeAsString == "time.Time" {
 		property.Type = "time"
-		// property.Type = "datetime"
 	} else if typeAsString == "interface" {
 		return
 	} else {
@@ -1252,7 +1240,7 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 
 	if len(field.Names) == 0 { //如果找不到field.Names，可能是繼承其他struct，所以需要去掃這個field的model
 		if astSelectorExpr, ok := field.Type.(*ast.SelectorExpr); ok { //
-			packageName := modelPackage //Harry: Maybe 'modelPackage' doesn't same with package of this type
+			packageName := modelPackage
 			if astTypeIdent, ok := astSelectorExpr.X.(*ast.Ident); ok {
 				packageName = astTypeIdent.Name
 			}
@@ -1261,14 +1249,12 @@ func (g *Goas) parseModelProperty(m *Model, field *ast.Field, modelPackage strin
 			name = astTypeIdent.Name
 		} else if astStarExpr, ok := field.Type.(*ast.StarExpr); ok { //Harry: Be used by 'pointer'
 			if astStarExprX, ok := astStarExpr.X.(*ast.SelectorExpr); ok {
-				//Harry: import from other package
-				//Ex: *model.Data
+				//Harry: import from other package. Ex: *model.Data
 				if astDataIdent, ok := astStarExprX.X.(*ast.Ident); ok {
 					name = astDataIdent.Name + "." + astStarExprX.Sel.Name
 				}
 			} else if astTypeIdent, ok := astStarExpr.X.(*ast.Ident); ok {
-				//Harry: import from currently package
-				//Ex: *Data
+				//Harry: import from currently package. Ex: *Data
 				name = astTypeIdent.Name
 			}
 		} else {
