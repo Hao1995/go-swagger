@@ -1193,21 +1193,6 @@ func (g *Goas) findModelDefinition(modelName string, currentPackage string) (*as
 				if !modelFound {
 					log.Fatalf("Can not find definition of %s model in package %s", modelNameFromPath, relativePackage)
 				}
-			} else {
-				//Harry: If the model do not import from "currentPackage". Directly find "model" from g.TypeDefinitions
-
-				var modelFound bool
-
-				for modelPkgPath, models := range g.TypeDefinitions {
-					if strings.HasSuffix(modelPkgPath, modelNameParts[0]) {
-						model = models[modelNameParts[1]]
-						modelFound = true
-					}
-				}
-				if !modelFound {
-					log.Fatalf("Can not find definition of %s model in GOAS.TypeDefinition", modelNameFromPath)
-				}
-
 			}
 		}
 	}
