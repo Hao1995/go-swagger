@@ -639,7 +639,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 				Format: basicTypesOASFormats[typeName],
 			}
 		} else {
-			_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
+			_, ok := g.OASSpec.Components.Schemas[typeName]
 			if ok {
 				parameter.Schema = &SchemaObject{
 					Ref: referenceLink(typeName),
@@ -670,7 +670,7 @@ func (g *Goas) parseParamComment(operation *OperationObject, commentLine string)
 	}
 	operation.RequestBody.Content[ContentTypeJson] = &MediaTypeObject{}
 
-	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
+	_, ok := g.OASSpec.Components.Schemas[typeName]
 	if ok {
 		operation.RequestBody.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
@@ -800,7 +800,7 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 		return err
 	}
 
-	_, ok := g.OASSpec.Components.Schemas[convertRefName(typeName)]
+	_, ok := g.OASSpec.Components.Schemas[typeName]
 	if ok {
 		response.Content[ContentTypeJson].Schema = &SchemaObject{
 			Ref: referenceLink(typeName),
@@ -857,12 +857,9 @@ func (g *Goas) registerType(typeName string) (string, error) {
 				}
 			}
 
-			//Harry: 這邊的registerType是"github.com. ... .example.model.Data"，所以好像不用convert
-			// componentsSchemasName := strings.Replace(registerType, "\\", "-", -1)
-			componentsSchemasName := convertRefName(registerType)
-			_, ok := g.OASSpec.Components.Schemas[componentsSchemasName]
+			_, ok := g.OASSpec.Components.Schemas[registerType]
 			if !ok {
-				g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
+				g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
 					Type:       "object",
 					Required:   model.Required,
 					Properties: map[string]interface{}{},
@@ -875,7 +872,7 @@ func (g *Goas) registerType(typeName string) (string, error) {
 					v.Items = nil
 					v.Format = ""
 				}
-				g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
+				g.OASSpec.Components.Schemas[registerType].Properties[k] = v
 			}
 
 			//Harry === Be used to parse the type directly equal other type
@@ -885,9 +882,8 @@ func (g *Goas) registerType(typeName string) (string, error) {
 			//Harry ===
 			for _, m := range innerModels {
 				registerType := m.Id
-				componentsSchemasName := convertRefName(registerType) //Harry: 似乎是不用轉換，因為m.Id本來就是轉換過的
-				if _, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; !ok {
-					g.OASSpec.Components.Schemas[componentsSchemasName] = &SchemaObject{
+				if _, ok := g.OASSpec.Components.Schemas[registerType]; !ok {
+					g.OASSpec.Components.Schemas[registerType] = &SchemaObject{
 						Type:       "object",
 						Required:   m.Required,
 						Properties: map[string]interface{}{},
@@ -902,14 +898,14 @@ func (g *Goas) registerType(typeName string) (string, error) {
 
 					// allOfobj := &AllOfObj{}
 					// allOfobj.
-					// g.OASSpec.Components.Schemas[componentsSchemasName].AllOf
+					// g.OASSpec.Components.Schemas[registerType].AllOf
 					// }else{
 					if v.Ref != "" {
 						v.Type = ""
 						v.Items = nil
 						v.Format = ""
 					}
-					g.OASSpec.Components.Schemas[componentsSchemasName].Properties[k] = v
+					g.OASSpec.Components.Schemas[registerType].Properties[k] = v
 					// }
 				}
 			}
@@ -928,8 +924,7 @@ func (g *Goas) registerTypeToParamStruct(typeName string) ([]*ParameterObject, e
 
 	//Harry === Parse params from g.OASSpec.Components.Schemas
 	params := []*ParameterObject{}
-	componentsSchemasName := convertRefName(registerType)
-	if schemaObj, ok := g.OASSpec.Components.Schemas[componentsSchemasName]; ok {
+	if schemaObj, ok := g.OASSpec.Components.Schemas[registerType]; ok {
 		for paramName, property := range schemaObj.Properties {
 			param := &ParameterObject{}
 			propertyModel := property.(*ModelProperty)
@@ -1126,8 +1121,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 		if err != nil {
 			return nil, err
 		}
-		//EX: m.Id = "gitlab.paradise-soft.com.tw.platform.common.paging.Hits"的properties應該直接等於"gitlab.paradise-soft.com.tw.glob.utils.paging.Hits"
-		// m.Properties = append(m.Properties, typeModel.Properties...)
+
 		if m.Properties == nil {
 			m.Properties = make(map[string]*ModelProperty)
 		}
