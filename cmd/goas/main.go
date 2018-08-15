@@ -33,12 +33,6 @@ func action(c *cli.Context) error {
 
 	// fmt.Println(c.GlobalString("output"))
 	return g.CreateOASFile(c.GlobalString("output"))
-
-	//Harry
-	// return g.CreateOASFile(filepath.Dir(os.Args[0]) + "\\index.json") //Harry: Current running path
-	// fmt.Println(filepath.Dir())
-	// return g
-	// return g.CreateOASFile("c:\\gotool\\src\\github.com\\mikunalpha\\goas\\example\\index.json") //Harry: Current running path
 }
 
 func main() {

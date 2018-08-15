@@ -5,3 +5,4 @@ cmd/goas/debug
 cmd/goas/oas.json
 SwaggerFileServer/debug
 SwaggerFileServer/swagger-file-server.tar
+.docker_temp_*

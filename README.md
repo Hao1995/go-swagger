@@ -90,15 +90,15 @@ cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 ```
 輸入以下指令，以產出API Doc
 ```
-%GOPATH%\bin\goas --output oas.json
+%GOPATH%\bin\goas --output swagger.json
 ```
 如果你有設定環境變數GOBIN=C:\gotool\bin的話，你可以輸入以下指令
 ```
-%GOBIN%\goas --output oas.json
+%GOBIN%\goas --output swagger.json
 ```
-接著檢查專案位置，就可以看到oas.json的產出了
+接著檢查專案位置，就可以看到swagger.json的產出了
 
-打開此oas.json，並複製其內容
+打開此swagger.json，並複製其內容
 貼到[Swagger Editor](http://editor.swagger.io/)
 就可以輸入參數並測試API了
 
@@ -116,7 +116,7 @@ go build
 ```
 輸入以下指令，以產出API Doc
 ```
-%GOPATH%\bin\goas --output oas.json
+%GOPATH%\bin\goas --output swagger.json
 ```
    
 ## 其他
