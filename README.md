@@ -120,6 +120,10 @@ go build
 ```
    
 ## 其他
+### OpenAPI Specification
+有關API的資料型態、parameter的參數，都可以上官方網站去查詢。 >> [OpenAPI Specification](https://swagger.io/specification)
+
+### Interface解法
 因為寫@Success、@Failure的時候，是直接讀取struct裡面的fields，但目前許多報表都是採用interface的作法
 ```perl
 type Hits struct{
