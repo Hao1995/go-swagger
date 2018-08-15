@@ -80,10 +80,6 @@ type DailyReportingConds struct {
 ```
 go get -u -v --insecure gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
 ```
-編譯執行檔案
-```
-go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
-```
 進入你要產生API Doc的專案位置
 ```
 cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
@@ -97,6 +93,11 @@ cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 %GOBIN%\goas --output reporting-qa.json
 ```
 接著檢查專案位置，就可以看到reporting-qa.json的產出了
+
+如果發現goas.exe不存在%GOBIN%裡面，手動編譯執行檔，並回去執行產文件的指令
+```
+go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+```
 
 打開此reporting-qa.json，並複製其內容
 貼到[Swagger Editor](http://editor.swagger.io/)
