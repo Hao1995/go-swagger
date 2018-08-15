@@ -24,16 +24,16 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 // @LicenseName MIT
 ```
 
-**＊@ServersURL** - Host      
-**＊@Version** - 版本   
-**＊@Title** - 標題   
-　**@Description** - 說明   
-　**@ContactName** - 聯絡人   
-　**@ContactEmail** - 聯絡信箱   
-　**@ContactURL** - 聯絡人網站   
-　**@TermsOfServiceUrl** - 服務條款網址   
-　**@LicenseURL** - License種類   
-　**@LicenseName** - License的網址   
+**@ServersURL** - ＊ Host      
+**@Version** - ＊ 版本   
+**@Title** - ＊ 標題   
+**@Description** - 說明   
+**@ContactName** - 聯絡人   
+**@ContactEmail** - 聯絡信箱   
+**@ContactURL** - 聯絡人網站   
+**@TermsOfServiceUrl** - 服務條款網址   
+**@LicenseURL** - License種類   
+**@LicenseName** - License的網址   
 　　
 　　
 ### Operation
@@ -50,13 +50,13 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 // @Router /api/group/{group_id}/users [get]
 ```
 
-  **@Title** - 此api的標題   
-　**@Description** - 此api的描述   
-　**@Param** - 此api的各個param  
-  **@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何required、description參數都寫在該struct裡面  
-**＊@Success/@Failure** - 此api的回傳結果。使用Success或Failure在產出結果上沒有差異，主要是根據後面的http status code(200, 400, 500 ...)來指定不一定的回傳結果   
-　**@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)   
-**＊@Router** - ＊手動寫下api路徑，以及其method   
+**@Title** - 此api的標題
+**@Description** - 此api的描述   
+**@Param** - 此api的各個param   
+**@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何required、description參數都寫在該struct裡面  
+**@Success/@Failure** - ＊ 此api的回傳結果。使用Success或Failure在產出結果上沒有差異，主要是根據後面的http status code(200, 400, 500 ...)來指定不一定的回傳結果   
+**@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)   
+**@Router** - ＊ 手動寫下api路徑，以及其method   
 
    
 ## Struct 範例
@@ -88,17 +88,17 @@ go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
 ```
 cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 ```
-輸入以下指令，以產出API Doc
+輸入以下指令，以產出API Doc(以reporting, qa分支為例)
 ```
-%GOPATH%\bin\goas --output swagger.json
+%GOPATH%\bin\goas --output reporting-qa.json
 ```
 如果你有設定環境變數GOBIN=C:\gotool\bin的話，你可以輸入以下指令
 ```
-%GOBIN%\goas --output swagger.json
+%GOBIN%\goas --output reporting-qa.json
 ```
-接著檢查專案位置，就可以看到swagger.json的產出了
+接著檢查專案位置，就可以看到reporting-qa.json的產出了
 
-打開此swagger.json，並複製其內容
+打開此reporting-qa.json，並複製其內容
 貼到[Swagger Editor](http://editor.swagger.io/)
 就可以輸入參數並測試API了
 
@@ -116,7 +116,7 @@ go build
 ```
 輸入以下指令，以產出API Doc
 ```
-%GOPATH%\bin\goas --output swagger.json
+%GOPATH%\bin\goas --output reporting-qa.json
 ```
    
 ## 其他
@@ -155,3 +155,28 @@ type DailyReportingPager struct {
 ## 尚不支援
 * 該API無回傳內容
 
+</br>
+
+# Swagger-UI
+server位置在lv-dev(10.200.252.121:1180)
+```
+打開xshell，並拖曳reporting-qa.json檔案到"/swagger"資料夾
+```
+```
+打開http://10.200.252.121:1280/
+並在搜索列貼上http://10.200.252.121:1180/reporting-qa.json
+就可以看到API Doc內容了
+可以嘗試"try it out"來測試API
+```
+## 其他問題
+如果發現swagger-ui http://10.200.252.121:1280/ 或是swagger-file-server http://10.200.252.121:1180/ 沒有回應的話
+```
+docker ps
+```
+確認swagger-ui或swagger-file-server是否存活
+如果是exit的狀態
+```
+docker restart swagger-ui
+docker restart swagger-file-server
+```
+如果依然不行，請交由Ted, Harvey, Edward處理
