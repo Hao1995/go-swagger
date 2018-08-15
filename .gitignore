@@ -3,3 +3,5 @@ glide.lock
 example/debug
 cmd/goas/debug
 cmd/goas/oas.json
+SwaggerFileServer/debug
+SwaggerFileServer/swagger-file-server.tar
