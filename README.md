@@ -49,11 +49,11 @@ Generate [OpenAPI Specification](https://swagger.io/specification) json file wit
 // @Resource users
 // @Router /api/group/{group_id}/users [get]
 ```
-　
-　**@Title** - 此api的標題   
+
+  **@Title** - 此api的標題   
 　**@Description** - 此api的描述   
-　**@Param** - 此api的各個param   
-　**@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何　required、description參數都寫在該struct裡面   
+　**@Param** - 此api的各個param  
+  **@ParamStruct** - 直接import整個struct為parameters(可以與上面@Param一起使用)，任何required、description參數都寫在該struct裡面  
 **＊@Success/@Failure** - 此api的回傳結果。使用Success或Failure在產出結果上沒有差異，主要是根據後面的http status code(200, 400, 500 ...)來指定不一定的回傳結果   
 　**@Resource** - tags的意思，可以幫不同API歸類群組(沒填預設歸類在"default"群組)   
 **＊@Router** - ＊手動寫下api路徑，以及其method   
@@ -122,6 +122,14 @@ go build
 ## 其他
 ### OpenAPI Specification
 有關API的資料型態、parameter的參數，都可以上官方網站去查詢。 >> [OpenAPI Specification](https://swagger.io/specification)
+
+### 檔案命名規則
+主要以qa、prod為主  
+[repo name]-[branch].json  
+EX:  
+  reporting-qa.json  
+  athena-prod.json  
+  dwh-prod.json  
 
 ### Interface解法
 因為寫@Success、@Failure的時候，是直接讀取struct裡面的fields，但目前許多報表都是採用interface的作法
