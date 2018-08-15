@@ -142,7 +142,7 @@ type EncodingObject struct {
 type ResponseObject struct {
 	Description string                      `json:"description"`
 	Headers     map[string]*HeaderObject    `json:"headers,omitempty"`
-	Content     map[string]*MediaTypeObject `json:"content"`
+	Content     map[string]*MediaTypeObject `json:"content,omitempty"`
 
 	// Ref is for ReferenceObject
 	Ref string `json:"$ref,omitempty"`

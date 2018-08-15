@@ -791,9 +791,15 @@ func (g *Goas) parseResponseComment(operation *OperationObject, commentLine stri
 			Content: map[string]*MediaTypeObject{},
 		}
 		response = operation.Responses[fmt.Sprint(code)]
-		response.Content[ContentTypeJson] = &MediaTypeObject{}
+
 	}
 	response.Description = strings.Trim(matches[4], "\"")
+
+	if matches[3] == "empty" {
+		return nil
+	}
+
+	response.Content[ContentTypeJson] = &MediaTypeObject{}
 
 	typeName, err := g.registerType(matches[3])
 	if err != nil {
