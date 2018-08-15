@@ -153,8 +153,13 @@ type DailyReportingPager struct {
 // @Success 200 {object} reporting.DailyReportingPager "每日報表回傳格式"
 ```
 
-## 尚不支援
-* 該API無回傳內容
+### API無回傳值的解法
+將struct的位置，改為'empty'，即可回傳空白的API response
+```
+...
+// @Success  200  {object}  empty  "UsersResponse JSON"
+...
+```
 
 </br>
 
