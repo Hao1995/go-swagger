@@ -11,7 +11,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.paradise-soft.com.tw/backend/goas/example/handler"
+	"github.com/Hao1995/go-swagger/example/handler"
 	// "github.com/mikunalpha/goas/example/handler"
 )
 

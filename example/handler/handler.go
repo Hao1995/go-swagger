@@ -3,10 +3,8 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.paradise-soft.com.tw/backend/goas/example/core"
-	// "github.com/mikunalpha/goas/example/core"
-	"gitlab.paradise-soft.com.tw/backend/goas/example/model"
-	// "github.com/mikunalpha/goas/example/model"
+	"github.com/Hao1995/go-swagger/example/core"
+	"github.com/Hao1995/go-swagger/example/model"
 )
 
 type EmptyResp struct{}

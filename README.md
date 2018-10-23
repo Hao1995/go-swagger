@@ -1,4 +1,4 @@
-# goas
+# Golang Swagger API Document
 > Based on [mikunalpha/goas](https://github.com/mikunalpha/goas) repository.
 
 Generate [OpenAPI Specification](https://swagger.io/specification) json file with comments in Go.
@@ -78,7 +78,7 @@ type DailyReportingConds struct {
 
 打開cmd/bash(*~~vscode的不行，原因不明~~*)
 ```
-go get -u -v --insecure gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+go get -u -v --insecure github.com/Hao1995/go-swagger/cmd/goas
 ```
 進入你要產生API Doc的專案位置
 ```
@@ -96,7 +96,7 @@ cd /d “C:\gotool\src\gitlab.paradise-soft.com.tw\routing\apis\mock”
 
 如果發現goas.exe不存在%GOBIN%裡面，手動編譯執行檔，並回去執行產文件的指令
 ```
-go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+go install github.com/Hao1995/go-swagger/cmd/goas
 ```
 
 打開此reporting-qa.json，並複製其內容
@@ -107,7 +107,7 @@ go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
 檢查"C:\gotool\bin"下面有無"goas.exe"的檔案  
 沒有的話請執行以下，以編譯執行檔
 ```
-go install gitlab.paradise-soft.com.tw/backend/goas/cmd/goas
+go install github.com/Hao1995/go-swagger/cmd/goas
 ```
 或是直接到repo下，執行go build產生執行檔，並移動檔案到"C:\gotool\bin"下面
 ```

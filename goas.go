@@ -46,15 +46,9 @@ func New() *Goas {
 		log.Fatal("$GOPATH environment variable is empty.")
 	}
 
-	//===Harry
-	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\goas\\example"
-	// gopath = strings.ToLower(gopath)
-
-	pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\routing\\apis\\mock"
+	//===Hao
+	pwd = "f:\\gotool\\src\\github.com\\Hao1995\\go-swagger\\example"
 	gopath = strings.ToLower(gopath)
-
-	// pwd = "c:\\gotool\\src\\gitlab.paradise-soft.com.tw\\backend\\dwh"
-	// gopath = strings.ToLower(gopath)
 	//===end
 
 	gopaths := strings.Split(gopath, ":")
@@ -980,6 +974,7 @@ func (g *Goas) parseModel(m *Model, modelName string, currentPackage string, kno
 
 	modelNameParts := strings.Split(modelName, ".")
 	m.Id = strings.Join(append(strings.Split(modelPackage, "/"), modelNameParts[len(modelNameParts)-1]), ".")
+	m.Id = strings.Replace(m.Id, "\\", ".", -1)
 
 	_, ok := modelNamesPackageNames[modelName]
 	if !ok {

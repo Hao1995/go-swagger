@@ -1,6 +1,6 @@
 package model
 
-import "gitlab.paradise-soft.com.tw/backend/goas/example/paging"
+import "github.com/Hao1995/go-swagger/example/paging"
 
 type Data struct {
 	Aparam string        `json:"Aparam"`

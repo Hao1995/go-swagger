@@ -4,8 +4,7 @@ import (
 	"log"
 	"os"
 
-	"gitlab.paradise-soft.com.tw/backend/goas"
-	// "github.com/mikunalpha/goas"
+	"github.com/Hao1995/go-swagger"
 	"github.com/urfave/cli"
 )
 
@@ -54,10 +53,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	//Harry
-	// err := action()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 }
