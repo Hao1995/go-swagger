@@ -103,7 +103,7 @@ type SchemaObject struct {
 	// Ref is for ReferenceObject
 	Ref string `json:"$ref,omitempty"`
 
-	// AllOf []AllOfObj `json:"allOf,omitempty"` //Harry
+	Default string `json:"default,omitempty"`
 }
 
 // type AllOfObj struct { //Harry
